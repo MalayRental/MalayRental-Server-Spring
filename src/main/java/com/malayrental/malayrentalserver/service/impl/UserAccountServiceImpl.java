@@ -8,6 +8,7 @@ import com.malayrental.malayrentalserver.service.UserAccountService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
@@ -109,6 +110,50 @@ public class UserAccountServiceImpl implements UserAccountService {
             }
             userHolder[0] = user;
             return 0; // 成功
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
+
+    @Override
+    public int updateUser(Map<String, Object> data) {
+        if (data == null || data.get("userId") == null) {
+            return 3; // 参数不合法
+        }
+        String userId = data.get("userId").toString();
+        try {
+            UserAccount user = userAccountMapper.selectById(userId);
+            if (user == null) {
+                return 1; // 账号不存在
+            }
+            // 检查是否要更新phoneNumber或password
+            boolean needAdmin = data.containsKey("phoneNumber") || data.containsKey("password");
+            if (needAdmin) {
+                Object runUserObj = data.get("runUser");
+                if (runUserObj == null) {
+                    return 3; // 参数不合法
+                }
+                String runUserId = runUserObj.toString();
+                UserAccount runUser = userAccountMapper.selectById(runUserId);
+                if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
+                    return 2; // 操作不合法
+                }
+            }
+            // 只允许更新userName, phoneNumber, password, avatar
+            if (data.containsKey("userName")) {
+                user.setUserName(data.get("userName").toString());
+            }
+            if (data.containsKey("phoneNumber")) {
+                user.setPhoneNumber(data.get("phoneNumber").toString());
+            }
+            if (data.containsKey("password")) {
+                user.setPassword(data.get("password").toString());
+            }
+            if (data.containsKey("avatar")) {
+                user.setAvatar(data.get("avatar").toString());
+            }
+            int rows = userAccountMapper.updateById(user);
+            return rows > 0 ? 0 : 4;
         } catch (Exception e) {
             return 4; // 系统错误
         }

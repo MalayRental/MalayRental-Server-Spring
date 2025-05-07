@@ -102,4 +102,25 @@ public class UserAccountController {
             return ApiResponse.error(500, "系统错误请稍后再试！");
         }
     }
+
+    @PostMapping("/updateUser")
+    public ApiResponse updateUser(@RequestBody Map<String, Object> req) {
+        try {
+            Object dataObj = req.get("data");
+            if (!(dataObj instanceof Map)) {
+                return ApiResponse.error(400, "参数不合法");
+            }
+            Map<String, Object> data = (Map<String, Object>) dataObj;
+            int result = userAccountService.updateUser(data);
+            return switch (result) {
+                case 0 -> ApiResponse.ok("更新成功", null);
+                case 1 -> ApiResponse.error(400, "目标账号不存在");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                case 3 -> ApiResponse.error(400, "参数不合法");
+                default -> ApiResponse.error(500, "系统错误请稍后再试！");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试！");
+        }
+    }
 }
