@@ -49,20 +49,30 @@ public class UserAccountServiceImpl implements UserAccountService {
         return IdGeneratorUtil.generateId(userAccountMapper, "user_id", prefix);
     }
 
+    /**
+     * 校验操作人和目标用户
+     * @return 0-校验通过，1-目标账号不存在，2-操作不合法
+     */
+    private int checkAdminAndTarget(String runUserId, String userId) {
+        UserAccount runUser = userAccountMapper.selectById(runUserId);
+        if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
+            return 2; // 操作不合法
+        }
+        UserAccount targetUser = userAccountMapper.selectById(userId);
+        if (targetUser == null) {
+            return 1; // 目标账号不存在
+        }
+        return 0;
+    }
+
     @Override
     public int deleteUser(String runUserId, String userId) {
         if (runUserId == null || userId == null) {
             return 3; // 参数不合法
         }
         try {
-            UserAccount runUser = userAccountMapper.selectById(runUserId);
-            if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
-                return 2; // 操作不合法
-            }
-            UserAccount targetUser = userAccountMapper.selectById(userId);
-            if (targetUser == null) {
-                return 1; // 目标账号不存在
-            }
+            int check = checkAdminAndTarget(runUserId, userId);
+            if (check != 0) return check;
             int rows = userAccountMapper.deleteById(userId);
             return rows > 0 ? 0 : 4; // 0-成功，4-系统错误
         } catch (Exception e) {
@@ -168,14 +178,9 @@ public class UserAccountServiceImpl implements UserAccountService {
         String runUserId = data.get("runUser").toString();
         String banReason = data.get("banReason").toString();
         try {
-            UserAccount runUser = userAccountMapper.selectById(runUserId);
-            if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
-                return 2; // 操作不合法
-            }
+            int check = checkAdminAndTarget(runUserId, userId);
+            if (check != 0) return check;
             UserAccount user = userAccountMapper.selectById(userId);
-            if (user == null) {
-                return 1; // 账号不存在
-            }
             user.setStatus("Ban");
             user.setBanReason(banReason);
             int rows = userAccountMapper.updateById(user);
@@ -193,14 +198,9 @@ public class UserAccountServiceImpl implements UserAccountService {
         String userId = data.get("userId").toString();
         String runUserId = data.get("runUser").toString();
         try {
-            UserAccount runUser = userAccountMapper.selectById(runUserId);
-            if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
-                return 2; // 操作不合法
-            }
+            int check = checkAdminAndTarget(runUserId, userId);
+            if (check != 0) return check;
             UserAccount user = userAccountMapper.selectById(userId);
-            if (user == null) {
-                return 1; // 账号不存在
-            }
             user.setStatus("Normal");
             user.setBanReason(null);
             int rows = userAccountMapper.updateById(user);
