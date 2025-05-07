@@ -6,7 +6,6 @@ import com.malayrental.malayrentalserver.service.UserAccountService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
@@ -28,31 +27,19 @@ public class UserAccountController {
                 return ApiResponse.error(400, "参数不合法");
             }
             Map<String, Object> data = (Map<String, Object>) dataObj;
-            if (data.get("userName") == null || data.get("phoneNumber") == null
-                    || data.get("avatar") == null || data.get("password") == null) {
-                return ApiResponse.error(400, "参数不合法");
-            }
-            String phone = data.get("phoneNumber").toString();
-            if (userAccountService.existsByPhone(phone)) {
-                return ApiResponse.error(400, "账号已存在");
-            }
-            UserAccount user = new UserAccount();
-            user.setUserId(userAccountService.generateId("U"));
-            user.setUserName(data.get("userName").toString());
-            user.setPhoneNumber(phone);
-            user.setAvatar(data.get("avatar").toString());
-            user.setPassword(data.get("password").toString());
-            user.setUserRole("User");
-            user.setStatus("Normal");
-            user.setCreateTime(LocalDateTime.now());
-            boolean ok = userAccountService.register(user);
-            if (ok) {
-                return ApiResponse.ok("注册成功，请登录", null);
-            } else {
-                return ApiResponse.error(500, "系统错误请稍后再试");
-            }
+            String userName = data.get("userName") == null ? null : data.get("userName").toString();
+            String phone = data.get("phoneNumber") == null ? null : data.get("phoneNumber").toString();
+            String avatar = data.get("avatar") == null ? null : data.get("avatar").toString();
+            String password = data.get("password") == null ? null : data.get("password").toString();
+            int result = userAccountService.registerUser(userName, phone, avatar, password);
+            return switch (result) {
+                case 0 -> ApiResponse.ok("注册成功，请登录", null);
+                case 1 -> ApiResponse.error(400, "账号已存在");
+                case 2 -> ApiResponse.error(400, "参数不合法");
+                default -> ApiResponse.error(500, "系统错误请稍后再试！");
+            };
         } catch (Exception e) {
-            return ApiResponse.error(500, "系统错误请稍后再试");
+            return ApiResponse.error(500, "系统错误请稍后再试！");
         }
     }
 
@@ -64,29 +51,55 @@ public class UserAccountController {
                 return ApiResponse.error(400, "参数不合法");
             }
             Map<String, Object> data = (Map<String, Object>) dataObj;
-            if (data.get("phoneNumber") == null || data.get("password") == null) {
+            String phone = data.get("phoneNumber") == null ? null : data.get("phoneNumber").toString();
+            String password = data.get("password") == null ? null : data.get("password").toString();
+            String ip = request.getRemoteAddr();
+            UserAccount[] userHolder = new UserAccount[1];
+            int result = userAccountService.loginUser(phone, password, ip, userHolder);
+            return switch (result) {
+                case 0 -> {
+                    UserAccount user = userHolder[0];
+                    Map<String, Object> content = new java.util.HashMap<>();
+                    content.put("userId", user.getUserId());
+                    content.put("userName", user.getUserName());
+                    content.put("phoneNumber", user.getPhoneNumber());
+                    content.put("avatar", user.getAvatar());
+                    content.put("role", user.getUserRole());
+                    yield ApiResponse.ok("登录成功", content);
+                }
+                case 1 -> ApiResponse.error(400, "账号或密码错误");
+                case 2 -> ApiResponse.error(400, "参数不合法");
+                case 3 -> ApiResponse.error(400, "账号状态异常，请联系客服");
+                default -> ApiResponse.error(500, "系统错误请稍后再试！");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试！");
+        }
+    }
+
+    @PostMapping("/deleteUser")
+    public ApiResponse deleteUser(@RequestBody Map<String, Object> req) {
+        try {
+            Object dataObj = req.get("data");
+            if (!(dataObj instanceof Map)) {
                 return ApiResponse.error(400, "参数不合法");
             }
-            String phone = data.get("phoneNumber").toString();
-            String password = data.get("password").toString();
-            String ip = request.getRemoteAddr();
-            // 这里省略登录失败次数校验逻辑，后续可补充
-            UserAccount user = userAccountService.login(phone, password, ip);
-            if (user == null) {
-                return ApiResponse.error(400, "账号或密码错误");
+            Map<String, Object> data = (Map<String, Object>) dataObj;
+            if (data.get("runUser") == null || data.get("userId") == null) {
+                return ApiResponse.error(400, "参数不合法");
             }
-            if ("Ban".equals(user.getStatus())) {
-                return ApiResponse.error(400, "账号状态异常，请联系客服");
-            }
-            Map<String, Object> content = new java.util.HashMap<>();
-            content.put("userId", user.getUserId());
-            content.put("userName", user.getUserName());
-            content.put("phoneNumber", user.getPhoneNumber());
-            content.put("avatar", user.getAvatar());
-            content.put("role", user.getUserRole());
-            return ApiResponse.ok("登录成功", content);
+            String runUserId = data.get("runUser").toString();
+            String userId = data.get("userId").toString();
+            int result = userAccountService.deleteUser(runUserId, userId);
+            return switch (result) {
+                case 0 -> ApiResponse.ok("删除成功", null);
+                case 1 -> ApiResponse.error(400, "目标账号不存在");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                case 3 -> ApiResponse.error(400, "参数不合法");
+                default -> ApiResponse.error(500, "系统错误请稍后再试！");
+            };
         } catch (Exception e) {
-            return ApiResponse.error(500, "系统错误请稍后再试");
+            return ApiResponse.error(500, "系统错误请稍后再试！");
         }
     }
 }
