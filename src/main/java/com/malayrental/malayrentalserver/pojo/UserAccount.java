@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.time.LocalDateTime;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 
 @Data
 @TableName("user_account")
@@ -26,7 +27,7 @@ public class UserAccount {
 
     private String status;
 
-    @TableField("ban_reason")
+    @TableField(value = "ban_reason", updateStrategy = FieldStrategy.ALWAYS)
     private String banReason;
 
     @TableField("create_time")
