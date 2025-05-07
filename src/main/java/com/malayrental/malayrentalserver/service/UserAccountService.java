@@ -12,4 +12,5 @@ public interface UserAccountService {
     int registerUser(String userName, String phoneNumber, String avatar, String password);
     int loginUser(String phoneNumber, String password, String ip, UserAccount[] userHolder);
     int updateUser(Map<String, Object> data);
+    int banUser(Map<String, Object> data);
 }

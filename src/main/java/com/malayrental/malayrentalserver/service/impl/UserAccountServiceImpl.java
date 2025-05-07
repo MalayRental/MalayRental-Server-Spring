@@ -158,4 +158,30 @@ public class UserAccountServiceImpl implements UserAccountService {
             return 4; // 系统错误
         }
     }
+
+    @Override
+    public int banUser(Map<String, Object> data) {
+        if (data == null || data.get("userId") == null || data.get("runUser") == null || data.get("banReason") == null) {
+            return 3; // 参数不合法
+        }
+        String userId = data.get("userId").toString();
+        String runUserId = data.get("runUser").toString();
+        String banReason = data.get("banReason").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
+                return 2; // 操作不合法
+            }
+            UserAccount user = userAccountMapper.selectById(userId);
+            if (user == null) {
+                return 1; // 账号不存在
+            }
+            user.setStatus("Ban");
+            user.setBanReason(banReason);
+            int rows = userAccountMapper.updateById(user);
+            return rows > 0 ? 0 : 4;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
 }
