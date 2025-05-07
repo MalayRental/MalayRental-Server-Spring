@@ -1,6 +1,6 @@
 package com.malayrental.malayrentalserver;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -8,8 +8,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class DatabaseConnectionChecker implements CommandLineRunner {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
+
+    public DatabaseConnectionChecker(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public void run(String... args) {
@@ -19,5 +22,11 @@ public class DatabaseConnectionChecker implements CommandLineRunner {
         } catch (Exception e) {
             System.out.println("数据库连接失败: " + e.getMessage());
         }
+    }
+
+    @PostConstruct
+    public void printDbName() {
+        String dbName = jdbcTemplate.queryForObject("SELECT DATABASE()", String.class);
+        System.out.println("当前连接的数据库：" + dbName);
     }
 }
