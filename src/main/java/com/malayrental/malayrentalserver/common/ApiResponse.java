@@ -10,15 +10,14 @@ public class ApiResponse {
     private int code;
     private String message;
     private long timestamp;
-    private Map<String, Object> data;
+    private Object data;
 
     public static ApiResponse ok(String message, Object content) {
         ApiResponse r = new ApiResponse();
         r.code = 200;
         r.message = message;
         r.timestamp = Instant.now().toEpochMilli();
-        r.data = new HashMap<>();
-        r.data.put("content", content);
+        r.data = content;
         return r;
     }
 
