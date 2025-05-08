@@ -118,4 +118,88 @@ public class HouseDetailServiceImpl implements HouseDetailService {
             return 5; // 系统错误
         }
     }
+
+    @Override
+    public int updateHouseDetail(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null || data.get("houseId") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String houseId = data.get("houseId").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null ||
+                !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()))) {
+                return 2; // 操作不合法
+            }
+            HouseDetail detail = houseDetailMapper.selectById(houseId);
+            if (detail == null) {
+                return 3; // 房源不存在
+            }
+            boolean updated = false;
+            if (data.get("address") != null) {
+                detail.setAddress(data.get("address").toString());
+                updated = true;
+            }
+            if (data.get("latLng") != null) {
+                detail.setLatLng(data.get("latLng").toString());
+                updated = true;
+            }
+            if (data.get("desc") != null) {
+                detail.setDesc(data.get("desc").toString());
+                updated = true;
+            }
+            if (data.get("tags") != null) {
+                detail.setTags(data.get("tags").toString());
+                updated = true;
+            }
+            if (data.get("detailImages") != null) {
+                detail.setDetailImages(data.get("detailImages").toString());
+                updated = true;
+            }
+            if (data.get("floor") != null) {
+                detail.setFloor(data.get("floor").toString());
+                updated = true;
+            }
+            if (data.get("availableDate") != null) {
+                try {
+                    java.sql.Date date = java.sql.Date.valueOf(
+                        data.get("availableDate").toString().replace("年", "-").replace("月", "-").replace("日", "")
+                    );
+                    detail.setAvailableDate(date);
+                    updated = true;
+                } catch (Exception e) {
+                    return 1; // 日期格式错误
+                }
+            }
+            if (data.get("paymentMethods") != null) {
+                detail.setPaymentMethods(data.get("paymentMethods").toString());
+                updated = true;
+            }
+            if (data.get("agencyFees") != null) {
+                detail.setAgencyFees(new java.math.BigDecimal(data.get("agencyFees").toString()));
+                updated = true;
+            }
+            if (data.get("deposit") != null) {
+                detail.setDeposit(new java.math.BigDecimal(data.get("deposit").toString()));
+                updated = true;
+            }
+            if (data.get("facility") != null) {
+                detail.setFacility(data.get("facility").toString());
+                updated = true;
+            }
+            if (data.get("community") != null) {
+                detail.setCommunity(data.get("community").toString());
+                updated = true;
+            }
+            if (!updated) {
+                return 1; // 没有可更新字段
+            }
+            detail.setUpdateTime(java.time.LocalDateTime.now());
+            int rows = houseDetailMapper.updateById(detail);
+            return rows > 0 ? 0 : 5;
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 } 

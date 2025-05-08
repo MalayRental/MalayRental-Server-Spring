@@ -98,4 +98,53 @@ public class HouseListServiceImpl implements HouseListService {
             return 5; // 系统错误
         }
     }
+
+    @Override
+    public int updateHouseItem(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null || data.get("houseId") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String houseId = data.get("houseId").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null ||
+                !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()))) {
+                return 2; // 操作不合法
+            }
+            HouseList house = houseListMapper.selectById(houseId);
+            if (house == null) {
+                return 3; // 房源不存在
+            }
+            boolean updated = false;
+            if (data.get("houseName") != null) {
+                house.setHouseName(data.get("houseName").toString());
+                updated = true;
+            }
+            if (data.get("area") != null) {
+                house.setArea(data.get("area").toString());
+                updated = true;
+            }
+            if (data.get("orientation") != null) {
+                house.setOrientation(data.get("orientation").toString());
+                updated = true;
+            }
+            if (data.get("proportion") != null) {
+                house.setProportion(new java.math.BigDecimal(data.get("proportion").toString()));
+                updated = true;
+            }
+            if (data.get("coverImage") != null) {
+                house.setCoverImage(data.get("coverImage").toString());
+                updated = true;
+            }
+            if (!updated) {
+                return 1; // 没有可更新字段
+            }
+            house.setUpdateTime(java.time.LocalDateTime.now());
+            int rows = houseListMapper.updateById(house);
+            return rows > 0 ? 0 : 5;
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 } 

@@ -64,4 +64,24 @@ public class HouseListController {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }
     }
+
+    @PostMapping("/updateHouseItem")
+    public ApiResponse updateHouseItem(@RequestBody Map<String, Object> req) {
+        Map<String, Object> data = parseDataMap(req);
+        if (data == null) {
+            return ApiResponse.error(400, "参数不合法");
+        }
+        try {
+            int result = houseListService.updateHouseItem(data);
+            return switch (result) {
+                case 0 -> ApiResponse.ok("更新房源项信息成功", null);
+                case 1 -> ApiResponse.error(400, "参数不合法");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                case 3 -> ApiResponse.error(400, "房源不存在");
+                default -> ApiResponse.error(500, "系统错误请稍后再试");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试");
+        }
+    }
 } 
