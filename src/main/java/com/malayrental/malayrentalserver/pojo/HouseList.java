@@ -33,4 +33,6 @@ public class HouseList {
 
     @TableField("update_time")
     private LocalDateTime updateTime;
+
+    private String status;
 } 
