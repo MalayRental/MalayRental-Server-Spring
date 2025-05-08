@@ -67,4 +67,24 @@ public class ApprovalTaskController {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }
     }
+
+    @PostMapping("/getApprovalList")
+    public ApiResponse getApprovalList(@RequestBody Map<String, Object> req) {
+        Map<String, Object> data = parseDataMap(req);
+        if (data == null) {
+            return ApiResponse.error(400, "参数不合法");
+        }
+        try {
+            java.util.List<Map<String, Object>> resultList = new java.util.ArrayList<>();
+            int result = approvalTaskService.getApprovalList(data, resultList);
+            return switch (result) {
+                case 0 -> ApiResponse.ok("审批任务列表获取成功", resultList);
+                case 1 -> ApiResponse.error(400, "参数不合法");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                default -> ApiResponse.error(500, "系统错误请稍后再试");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试");
+        }
+    }
 } 

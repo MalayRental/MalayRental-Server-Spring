@@ -127,4 +127,36 @@ public class ApprovalTaskServiceImpl implements ApprovalTaskService {
             return 5; // 系统错误
         }
     }
+
+    @Override
+    public int getApprovalList(Map<String, Object> data, java.util.List<Map<String, Object>> resultList) {
+        if (data == null || data.get("runUser") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null || !"Admin".equals(runUser.getUserRole())) {
+                return 2; // 操作不合法
+            }
+            java.util.List<ApprovalTask> list = approvalTaskMapper.selectList(null);
+            for (ApprovalTask task : list) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("approvalId", task.getApprovalId());
+                map.put("title", task.getTitle());
+                map.put("desc", task.getDesc());
+                map.put("status", task.getStatus());
+                map.put("command", task.getCommand());
+                map.put("createUser", task.getCreateUser());
+                map.put("createTime", task.getCreateTime());
+                map.put("finishUser", task.getFinishUser());
+                map.put("finishTime", task.getFinishTime());
+                map.put("rejectReason", task.getRejectReason());
+                resultList.add(map);
+            }
+            return 0;
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 } 
