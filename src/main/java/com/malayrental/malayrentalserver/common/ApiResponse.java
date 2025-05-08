@@ -2,8 +2,6 @@ package com.malayrental.malayrentalserver.common;
 
 import lombok.Data;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 @Data
 public class ApiResponse {
