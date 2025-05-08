@@ -62,4 +62,118 @@ public class HouseAreaServiceImpl implements HouseAreaService {
             return 4; // 系统错误
         }
     }
+
+    /**
+     * 校验操作人和目标区域
+     * @return 0-校验通过，2-操作不合法，3-区域不存在
+     */
+    private int checkAdminAndArea(String runUserId, String areaId) {
+        UserAccount runUser = userAccountMapper.selectById(runUserId);
+        if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
+            return 2; // 操作不合法
+        }
+        HouseArea area = houseAreaMapper.selectById(areaId);
+        if (area == null) {
+            return 3; // 区域不存在
+        }
+        return 0;
+    }
+
+    @Override
+    public int deleteArea(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null || data.get("areaId") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String areaId = data.get("areaId").toString();
+        try {
+            int check = checkAdminAndArea(runUserId, areaId);
+            if (check != 0) return check;
+            int rows = houseAreaMapper.deleteById(areaId);
+            return rows > 0 ? 0 : 4;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
+
+    @Override
+    public int updateArea(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null || data.get("areaId") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String areaId = data.get("areaId").toString();
+        try {
+            int check = checkAdminAndArea(runUserId, areaId);
+            if (check != 0) return check;
+            HouseArea area = houseAreaMapper.selectById(areaId);
+            if (data.containsKey("areaName")) {
+                area.setAreaName(data.get("areaName").toString());
+            }
+            if (data.containsKey("address")) {
+                area.setAddress(data.get("address").toString());
+            }
+            if (data.containsKey("latLng")) {
+                area.setLatLng(data.get("latLng").toString());
+            }
+            if (data.containsKey("desc")) {
+                area.setDesc(data.get("desc").toString());
+            }
+            area.setUpdateTime(java.time.LocalDateTime.now());
+            int rows = houseAreaMapper.updateById(area);
+            return rows > 0 ? 0 : 4;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
+
+    @Override
+    public int getAreaList(Map<String, Object> data, java.util.List<Map<String, Object>> resultList) {
+        if (data == null || data.get("runUser") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null) {
+                return 2; // 操作不合法
+            }
+            java.util.List<HouseArea> list = houseAreaMapper.selectList(null);
+            for (HouseArea area : list) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("areaId", area.getAreaId());
+                map.put("areaName", area.getAreaName());
+                resultList.add(map);
+            }
+            return 0;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
+
+    @Override
+    public int getAreaDetail(Map<String, Object> data, Map<String, Object> result) {
+        if (data == null || data.get("runUser") == null || data.get("areaId") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String areaId = data.get("areaId").toString();
+        try {
+            int check = checkAdminAndArea(runUserId, areaId);
+            if (check != 0) return check;
+            HouseArea area = houseAreaMapper.selectById(areaId);
+            result.put("runUser", runUserId);
+            result.put("areaId", area.getAreaId());
+            result.put("areaName", area.getAreaName());
+            result.put("address", area.getAddress());
+            result.put("latLng", area.getLatLng());
+            result.put("desc", area.getDesc());
+            result.put("createUser", area.getCreateUser());
+            result.put("updateTime", area.getUpdateTime());
+            result.put("createTime", area.getCreateTime());
+            return 0;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
 } 
