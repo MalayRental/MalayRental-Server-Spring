@@ -65,4 +65,37 @@ public class HouseListServiceImpl implements HouseListService {
             return 5; // 系统错误
         }
     }
+
+    @Override
+    public int getHouseList(Map<String, Object> data, java.util.List<Map<String, Object>> resultList) {
+        if (data == null || data.get("runUser") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null ||
+                !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()) || "User".equals(runUser.getUserRole()))) {
+                return 2; // 操作不合法
+            }
+            java.util.List<HouseList> list = houseListMapper.selectList(null);
+            for (HouseList house : list) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("houseId", house.getHouseId());
+                map.put("houseName", house.getHouseName());
+                map.put("area", house.getArea());
+                map.put("orientation", house.getOrientation());
+                map.put("proportion", house.getProportion());
+                map.put("coverImage", house.getCoverImage());
+                map.put("status", house.getStatus());
+                map.put("createUser", house.getCreateUser());
+                map.put("createTime", house.getCreateTime());
+                map.put("updateTime", house.getUpdateTime());
+                resultList.add(map);
+            }
+            return 0;
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 } 

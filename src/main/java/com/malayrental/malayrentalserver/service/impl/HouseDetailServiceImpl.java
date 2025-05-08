@@ -80,4 +80,42 @@ public class HouseDetailServiceImpl implements HouseDetailService {
             return 5; // 系统错误
         }
     }
+
+    @Override
+    public int getHouseDetail(Map<String, Object> data, java.util.Map<String, Object> result) {
+        if (data == null || data.get("runUser") == null || data.get("houseId") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String houseId = data.get("houseId").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null ||
+                !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()) || "User".equals(runUser.getUserRole()))) {
+                return 2; // 操作不合法
+            }
+            HouseDetail detail = houseDetailMapper.selectById(houseId);
+            if (detail == null) {
+                return 3; // 房源信息不存在
+            }
+            result.put("houseId", detail.getHouseId());
+            result.put("address", detail.getAddress());
+            result.put("latLng", detail.getLatLng());
+            result.put("desc", detail.getDesc());
+            result.put("tags", detail.getTags());
+            result.put("detailImages", detail.getDetailImages());
+            result.put("floor", detail.getFloor());
+            result.put("availableDate", detail.getAvailableDate());
+            result.put("paymentMethods", detail.getPaymentMethods());
+            result.put("agencyFees", detail.getAgencyFees());
+            result.put("deposit", detail.getDeposit());
+            result.put("facility", detail.getFacility());
+            result.put("community", detail.getCommunity());
+            result.put("createTime", detail.getCreateTime());
+            result.put("updateTime", detail.getUpdateTime());
+            return 0;
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 } 
