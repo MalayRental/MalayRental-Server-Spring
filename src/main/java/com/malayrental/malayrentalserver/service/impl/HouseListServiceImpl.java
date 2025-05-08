@@ -24,7 +24,7 @@ public class HouseListServiceImpl implements HouseListService {
     public int createHouseItem(Map<String, Object> data) {
         if (data == null || data.get("runUser") == null || data.get("houseName") == null
                 || data.get("area") == null || data.get("orientation") == null
-                || data.get("proportion") == null || data.get("cover_image") == null) {
+                || data.get("proportion") == null || data.get("coverImage") == null) {
             return 1; // 参数不合法
         }
         String runUserId = data.get("runUser").toString();
@@ -32,7 +32,7 @@ public class HouseListServiceImpl implements HouseListService {
         String area = data.get("area").toString();
         String orientation = data.get("orientation").toString();
         String proportionStr = data.get("proportion").toString();
-        String coverImage = data.get("cover_image").toString();
+        String coverImage = data.get("coverImage").toString();
         try {
             UserAccount runUser = userAccountMapper.selectById(runUserId);
             if (runUser == null || 
