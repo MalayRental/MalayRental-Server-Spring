@@ -147,4 +147,27 @@ public class HouseListServiceImpl implements HouseListService {
             return 5; // 系统错误
         }
     }
+
+    public boolean setHouseStatus(String houseId, String status) {
+        if (!"Normal".equals(status) && !"Rejected".equals(status)) {
+            return false;
+        }
+        try {
+            HouseList house = houseListMapper.selectById(houseId);
+            if (house == null) return false;
+            house.setStatus(status);
+            house.setUpdateTime(java.time.LocalDateTime.now());
+            return houseListMapper.updateById(house) > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean deleteHouse(String houseId) {
+        try {
+            return houseListMapper.deleteById(houseId) > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 } 
