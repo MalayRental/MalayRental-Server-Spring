@@ -20,7 +20,7 @@ public class HouseArea {
     @TableField("lat_lng")
     private String latLng;
 
-    @TableField("desc")
+    @TableField(value = "`desc`")
     private String desc;
 
     @TableField("create_user")
