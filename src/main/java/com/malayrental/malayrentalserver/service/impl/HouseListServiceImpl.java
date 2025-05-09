@@ -24,7 +24,8 @@ public class HouseListServiceImpl implements HouseListService {
     public int createHouseItem(Map<String, Object> data) {
         if (data == null || data.get("runUser") == null || data.get("houseName") == null
                 || data.get("area") == null || data.get("orientation") == null
-                || data.get("proportion") == null || data.get("coverImage") == null) {
+                || data.get("proportion") == null || data.get("coverImage") == null
+                || data.get("price") == null) {
             return 1; // 参数不合法
         }
         String runUserId = data.get("runUser").toString();
@@ -33,6 +34,7 @@ public class HouseListServiceImpl implements HouseListService {
         String orientation = data.get("orientation").toString();
         String proportionStr = data.get("proportion").toString();
         String coverImage = data.get("coverImage").toString();
+        String priceStr = data.get("price").toString();
         try {
             UserAccount runUser = userAccountMapper.selectById(runUserId);
             if (runUser == null || 
@@ -51,6 +53,7 @@ public class HouseListServiceImpl implements HouseListService {
             house.setOrientation(orientation);
             house.setProportion(new java.math.BigDecimal(proportionStr));
             house.setCoverImage(coverImage);
+            house.setPrice(new java.math.BigDecimal(priceStr));
             house.setCreateUser(runUserId);
             house.setCreateTime(java.time.LocalDateTime.now());
             house.setUpdateTime(java.time.LocalDateTime.now());
@@ -87,6 +90,7 @@ public class HouseListServiceImpl implements HouseListService {
                 map.put("orientation", house.getOrientation());
                 map.put("proportion", house.getProportion());
                 map.put("coverImage", house.getCoverImage());
+                map.put("price", house.getPrice());
                 map.put("status", house.getStatus());
                 map.put("createUser", house.getCreateUser());
                 map.put("createTime", house.getCreateTime());

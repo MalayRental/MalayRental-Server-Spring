@@ -35,4 +35,6 @@ public class HouseList {
     private LocalDateTime updateTime;
 
     private String status;
+
+    private BigDecimal price;
 } 
