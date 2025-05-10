@@ -8,6 +8,7 @@ import com.malayrental.malayrentalserver.pojo.HouseList;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
 import com.malayrental.malayrentalserver.service.HouseDetailService;
 import com.malayrental.malayrentalserver.service.UserFavoriteService;
+import com.malayrental.malayrentalserver.service.UserBrowserHistoryService;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 
@@ -17,12 +18,14 @@ public class HouseDetailServiceImpl implements HouseDetailService {
     private final HouseListMapper houseListMapper;
     private final UserAccountMapper userAccountMapper;
     private final UserFavoriteService userFavoriteService;
+    private final UserBrowserHistoryService userBrowserHistoryService;
 
-    public HouseDetailServiceImpl(HouseDetailMapper houseDetailMapper, HouseListMapper houseListMapper, UserAccountMapper userAccountMapper, UserFavoriteService userFavoriteService) {
+    public HouseDetailServiceImpl(HouseDetailMapper houseDetailMapper, HouseListMapper houseListMapper, UserAccountMapper userAccountMapper, UserFavoriteService userFavoriteService, UserBrowserHistoryService userBrowserHistoryService) {
         this.houseDetailMapper = houseDetailMapper;
         this.houseListMapper = houseListMapper;
         this.userAccountMapper = userAccountMapper;
         this.userFavoriteService = userFavoriteService;
+        this.userBrowserHistoryService = userBrowserHistoryService;
     }
 
     @Override
@@ -92,6 +95,8 @@ public class HouseDetailServiceImpl implements HouseDetailService {
         String runUserId = data.get("runUser").toString();
         String houseId = data.get("houseId").toString();
         try {
+            // 新增：自动添加浏览历史
+            addBrowserHistory(runUserId, houseId);
             UserAccount runUser = userAccountMapper.selectById(runUserId);
             if (runUser == null || runUser.getUserRole() == null ||
                 !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()) || "User".equals(runUser.getUserRole()))) {
@@ -213,5 +218,10 @@ public class HouseDetailServiceImpl implements HouseDetailService {
         } catch (Exception e) {
             return 5; // 系统错误
         }
+    }
+
+    @Override
+    public void addBrowserHistory(String userId, String houseId) {
+        userBrowserHistoryService.addHistory(userId, houseId);
     }
 } 
