@@ -20,4 +20,5 @@ public interface UserAccountService {
     void setAllUserOffline();
     TokenInfo generateUserToken(String userId);
     int autoLogin(String phoneNumber, String userToken, String ip, UserAccount[] userHolder);
+    UserAccount getUserById(String userId);
 }

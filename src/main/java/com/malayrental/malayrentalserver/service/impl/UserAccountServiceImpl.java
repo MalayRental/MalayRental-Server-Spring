@@ -168,6 +168,9 @@ public class UserAccountServiceImpl implements UserAccountService {
             if (data.containsKey("avatar")) {
                 user.setAvatar(data.get("avatar").toString());
             }
+            if (data.containsKey("onlineStatus")) {
+                user.setOnlineStatus(data.get("onlineStatus").toString());
+            }
             int rows = userAccountMapper.updateById(user);
             return rows > 0 ? 0 : 4;
         } catch (Exception e) {
@@ -314,5 +317,11 @@ public class UserAccountServiceImpl implements UserAccountService {
         } catch (Exception e) {
             return 5; // 系统错误
         }
+    }
+
+    @Override
+    public UserAccount getUserById(String userId) {
+        if (userId == null) return null;
+        return userAccountMapper.selectById(userId);
     }
 }
