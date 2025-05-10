@@ -8,7 +8,9 @@ import com.malayrental.malayrentalserver.service.UserAccountService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
@@ -207,6 +209,34 @@ public class UserAccountServiceImpl implements UserAccountService {
             return rows > 0 ? 0 : 4;
         } catch (Exception e) {
             return 4; // 系统错误
+        }
+    }
+
+    @Override
+    public int getUserList(Map<String, Object> data, List<Map<String, Object>> resultList) {
+        if (data == null || data.get("runUser") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null || !"Admin".equals(runUser.getUserRole())) {
+                return 2; // 操作不合法
+            }
+            List<UserAccount> userList = userAccountMapper.selectList(new QueryWrapper<>());
+            for (UserAccount user : userList) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("userId", user.getUserId());
+                map.put("userName", user.getUserName());
+                map.put("phoneNumber", user.getPhoneNumber());
+                map.put("avatar", user.getAvatar());
+                map.put("userRole", user.getUserRole());
+                map.put("status", user.getStatus());
+                resultList.add(map);
+            }
+            return 0;
+        } catch (Exception e) {
+            return 5; // 系统错误
         }
     }
 }
