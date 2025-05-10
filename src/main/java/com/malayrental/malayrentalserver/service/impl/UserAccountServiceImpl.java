@@ -287,4 +287,32 @@ public class UserAccountServiceImpl implements UserAccountService {
             return null;
         }
     }
+
+    @Override
+    public int autoLogin(String phoneNumber, String userToken, String ip, UserAccount[] userHolder) {
+        if (phoneNumber == null || userToken == null) {
+            return 2; // 参数不合法
+        }
+        try {
+            QueryWrapper<UserAccount> wrapper = new QueryWrapper<>();
+            wrapper.eq("phone_number", phoneNumber).eq("user_token", userToken);
+            UserAccount user = userAccountMapper.selectOne(wrapper);
+            if (user == null) {
+                return 1; // 账号或密码错误
+            }
+            if ("Ban".equals(user.getStatus())) {
+                return 3; // 账号状态异常
+            }
+            if (user.getTokenExpired() == null || user.getTokenExpired().isBefore(LocalDateTime.now())) {
+                return 4; // token超时
+            }
+            LocalDateTime newExpired = LocalDateTime.now().plusHours(48);
+            user.setTokenExpired(newExpired);
+            userAccountMapper.updateById(user);
+            userHolder[0] = user;
+            return 0; // 成功
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 }

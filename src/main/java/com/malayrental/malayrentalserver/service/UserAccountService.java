@@ -19,4 +19,5 @@ public interface UserAccountService {
     int logout(Map<String, Object> data);
     void setAllUserOffline();
     TokenInfo generateUserToken(String userId);
+    int autoLogin(String phoneNumber, String userToken, String ip, UserAccount[] userHolder);
 }

@@ -214,4 +214,42 @@ public class UserAccountController {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }
     }
+
+    @PostMapping("/autoLogin")
+    public ApiResponse autoLogin(@RequestBody Map<String, Object> req, HttpServletRequest request) {
+        try {
+            Object dataObj = req.get("data");
+            if (!(dataObj instanceof Map)) {
+                return ApiResponse.error(400, "参数不合法");
+            }
+            Map<String, Object> data = (Map<String, Object>) dataObj;
+            String phone = data.get("phoneNumber") == null ? null : data.get("phoneNumber").toString();
+            String userToken = data.get("user_token") == null ? null : data.get("user_token").toString();
+            String ip = request.getRemoteAddr();
+            UserAccount[] userHolder = new UserAccount[1];
+            int result = userAccountService.autoLogin(phone, userToken, ip, userHolder);
+            return switch (result) {
+                case 0 -> {
+                    UserAccount user = userHolder[0];
+                    Map<String, Object> content = new java.util.HashMap<>();
+                    content.put("userId", user.getUserId());
+                    content.put("userName", user.getUserName());
+                    content.put("phoneNumber", user.getPhoneNumber());
+                    content.put("avatar", user.getAvatar());
+                    content.put("role", user.getUserRole());
+                    content.put("userToken", user.getUserToken());
+                    java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    content.put("tokenExpired", user.getTokenExpired() != null ? user.getTokenExpired().format(formatter) : null);
+                    yield ApiResponse.ok("登录成功", content);
+                }
+                case 1 -> ApiResponse.error(400, "账号或密码错误");
+                case 2 -> ApiResponse.error(400, "参数不合法");
+                case 3 -> ApiResponse.error(400, "账号状态异常，请联系客服");
+                case 4 -> ApiResponse.error(400, "你的登录信息已失效，请重新登录");
+                default -> ApiResponse.error(500, "系统错误请稍后再试！");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试！");
+        }
+    }
 }
