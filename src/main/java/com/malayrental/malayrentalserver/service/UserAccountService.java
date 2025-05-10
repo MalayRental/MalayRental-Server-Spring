@@ -1,6 +1,7 @@
 package com.malayrental.malayrentalserver.service;
 
 import com.malayrental.malayrentalserver.pojo.UserAccount;
+import com.malayrental.malayrentalserver.common.TokenInfo;
 import java.util.Map;
 
 public interface UserAccountService {
@@ -17,4 +18,5 @@ public interface UserAccountService {
     int getUserList(Map<String, Object> data, java.util.List<java.util.Map<String, Object>> resultList);
     int logout(Map<String, Object> data);
     void setAllUserOffline();
+    TokenInfo generateUserToken(String userId);
 }

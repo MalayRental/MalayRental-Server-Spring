@@ -3,15 +3,17 @@ package com.malayrental.malayrentalserver.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.malayrental.malayrentalserver.common.IdGeneratorUtil;
+import com.malayrental.malayrentalserver.common.TokenUtil;
 import com.malayrental.malayrentalserver.dao.UserAccountMapper;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
 import com.malayrental.malayrentalserver.service.UserAccountService;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import com.malayrental.malayrentalserver.common.TokenInfo;
 
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
@@ -267,5 +269,22 @@ public class UserAccountServiceImpl implements UserAccountService {
         UpdateWrapper<UserAccount> updateWrapper = new UpdateWrapper<>();
         updateWrapper.set("online_status", "offline");
         userAccountMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public TokenInfo generateUserToken(String userId) {
+        if (userId == null) return null;
+        UserAccount user = userAccountMapper.selectById(userId);
+        if (user == null) return null;
+        try {
+            String token = TokenUtil.generateToken();
+            LocalDateTime expired = LocalDateTime.now().plusHours(48);
+            user.setUserToken(token);
+            user.setTokenExpired(expired);
+            userAccountMapper.updateById(user);
+            return new TokenInfo(token, expired);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

@@ -1,11 +1,13 @@
 package com.malayrental.malayrentalserver.controller;
 
 import com.malayrental.malayrentalserver.common.ApiResponse;
+import com.malayrental.malayrentalserver.common.TokenInfo;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
 import com.malayrental.malayrentalserver.service.UserAccountService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
@@ -59,12 +61,16 @@ public class UserAccountController {
             return switch (result) {
                 case 0 -> {
                     UserAccount user = userHolder[0];
+                    TokenInfo tokenInfo = userAccountService.generateUserToken(user.getUserId());
                     Map<String, Object> content = new java.util.HashMap<>();
                     content.put("userId", user.getUserId());
                     content.put("userName", user.getUserName());
                     content.put("phoneNumber", user.getPhoneNumber());
                     content.put("avatar", user.getAvatar());
                     content.put("role", user.getUserRole());
+                    content.put("userToken", tokenInfo != null ? tokenInfo.token() : null);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    content.put("tokenExpired", tokenInfo != null && tokenInfo.expired() != null ? tokenInfo.expired().format(formatter) : null);
                     yield ApiResponse.ok("登录成功", content);
                 }
                 case 1 -> ApiResponse.error(400, "账号或密码错误");

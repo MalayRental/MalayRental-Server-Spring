@@ -41,4 +41,10 @@ public class UserAccount {
 
     @TableField("online_status")
     private String onlineStatus;
+
+    @TableField("user_token")
+    private String userToken;
+
+    @TableField("token_expired")
+    private LocalDateTime tokenExpired;
 }
