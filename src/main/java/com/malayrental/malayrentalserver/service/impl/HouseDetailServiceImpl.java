@@ -7,6 +7,7 @@ import com.malayrental.malayrentalserver.pojo.HouseDetail;
 import com.malayrental.malayrentalserver.pojo.HouseList;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
 import com.malayrental.malayrentalserver.service.HouseDetailService;
+import com.malayrental.malayrentalserver.service.UserFavoriteService;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 
@@ -15,11 +16,13 @@ public class HouseDetailServiceImpl implements HouseDetailService {
     private final HouseDetailMapper houseDetailMapper;
     private final HouseListMapper houseListMapper;
     private final UserAccountMapper userAccountMapper;
+    private final UserFavoriteService userFavoriteService;
 
-    public HouseDetailServiceImpl(HouseDetailMapper houseDetailMapper, HouseListMapper houseListMapper, UserAccountMapper userAccountMapper) {
+    public HouseDetailServiceImpl(HouseDetailMapper houseDetailMapper, HouseListMapper houseListMapper, UserAccountMapper userAccountMapper, UserFavoriteService userFavoriteService) {
         this.houseDetailMapper = houseDetailMapper;
         this.houseListMapper = houseListMapper;
         this.userAccountMapper = userAccountMapper;
+        this.userFavoriteService = userFavoriteService;
     }
 
     @Override
@@ -113,6 +116,15 @@ public class HouseDetailServiceImpl implements HouseDetailService {
             result.put("community", detail.getCommunity());
             result.put("createTime", detail.getCreateTime());
             result.put("updateTime", detail.getUpdateTime());
+            // 增加favoriteStatus字段
+            java.util.Map<String, Object> favoriteResult = new java.util.HashMap<>();
+            int favoriteCode = userFavoriteService.checkFavoriteStatus(data, favoriteResult);
+            if (favoriteCode == 0) {
+                // 规范：favoriteStatus为布尔类型
+                result.put("favoriteStatus", "true".equals(favoriteResult.get("status")));
+            } else {
+                result.put("favoriteStatus", false);
+            }
             return 0;
         } catch (Exception e) {
             return 5; // 系统错误
