@@ -15,4 +15,6 @@ public interface UserAccountService {
     int banUser(Map<String, Object> data);
     int unbanUser(Map<String, Object> data);
     int getUserList(Map<String, Object> data, java.util.List<java.util.Map<String, Object>> resultList);
+    int logout(Map<String, Object> data);
+    void setAllUserOffline();
 }

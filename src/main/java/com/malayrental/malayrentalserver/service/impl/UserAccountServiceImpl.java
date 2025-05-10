@@ -1,6 +1,7 @@
 package com.malayrental.malayrentalserver.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.malayrental.malayrentalserver.common.IdGeneratorUtil;
 import com.malayrental.malayrentalserver.dao.UserAccountMapper;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
@@ -34,6 +35,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (user != null) {
             user.setLastLoginTime(LocalDateTime.now());
             user.setLastLoginIp(ip);
+            user.setOnlineStatus("online");
             userAccountMapper.updateById(user);
         }
         return user;
@@ -238,5 +240,32 @@ public class UserAccountServiceImpl implements UserAccountService {
         } catch (Exception e) {
             return 5; // 系统错误
         }
+    }
+
+    @Override
+    public int logout(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null ||
+                !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()) || "User".equals(runUser.getUserRole()))) {
+                return 2; // 操作不合法
+            }
+            runUser.setOnlineStatus("offline");
+            userAccountMapper.updateById(runUser);
+            return 0;
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
+
+    @Override
+    public void setAllUserOffline() {
+        UpdateWrapper<UserAccount> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.set("online_status", "offline");
+        userAccountMapper.update(null, updateWrapper);
     }
 }

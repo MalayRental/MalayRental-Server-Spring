@@ -38,4 +38,7 @@ public class UserAccount {
 
     @TableField("last_login_ip")
     private String lastLoginIp;
+
+    @TableField("online_status")
+    private String onlineStatus;
 }
