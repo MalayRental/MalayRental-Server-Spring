@@ -82,4 +82,25 @@ public class UserBrowserHistoryServiceImpl implements UserBrowserHistoryService 
             return 5; // 系统错误
         }
     }
+
+    @Override
+    public int clearHistory(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        try {
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || runUser.getUserRole() == null ||
+                !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()) || "User".equals(runUser.getUserRole()))) {
+                return 2; // 操作不合法
+            }
+            QueryWrapper<UserBrowserHistory> wrapper = new QueryWrapper<>();
+            wrapper.eq("user_id", runUserId);
+            userBrowserHistoryMapper.delete(wrapper);
+            return 0;
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 } 

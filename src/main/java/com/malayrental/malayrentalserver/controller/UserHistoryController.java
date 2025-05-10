@@ -43,4 +43,23 @@ public class UserHistoryController {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }
     }
+
+    @PostMapping("/clearMyHistory")
+    public ApiResponse clearMyHistory(@RequestBody Map<String, Object> req) {
+        Map<String, Object> data = parseDataMap(req);
+        if (data == null) {
+            return ApiResponse.error(400, "参数不合法");
+        }
+        try {
+            int code = userBrowserHistoryService.clearHistory(data);
+            return switch (code) {
+                case 0 -> ApiResponse.ok("清空浏览历史成功", null);
+                case 1 -> ApiResponse.error(400, "参数不合法");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                default -> ApiResponse.error(500, "系统错误请稍后再试");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试");
+        }
+    }
 }
