@@ -174,4 +174,36 @@ public class ChatServiceImpl implements ChatService {
             return 4; // 系统错误
         }
     }
+
+    @Override
+    public int readChatMessages(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null || data.get("chatId") == null) {
+            return 1; // 参数不合法
+        }
+        String userId = data.get("runUser").toString();
+        String chatId = data.get("chatId").toString();
+        try {
+            UserAccount user = userAccountMapper.selectById(userId);
+            if (user == null) {
+                return 3; // 操作不合法
+            }
+            String role = user.getUserRole();
+            if (!("User".equals(role) || "Admin".equals(role) || "Staff".equals(role))) {
+                return 3; // 操作不合法
+            }
+            ChatList chat = chatListMapper.selectById(chatId);
+            if (chat == null) {
+                return 2; // 会话不存在
+            }
+            // 批量更新消息状态
+            QueryWrapper<MessageList> msgWrapper = new QueryWrapper<>();
+            msgWrapper.eq("chat_id", chatId).ne("sender_id", userId);
+            MessageList updateMsg = new MessageList();
+            updateMsg.setStatus("Read");
+            messageListMapper.update(updateMsg, msgWrapper);
+            return 0;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
 } 

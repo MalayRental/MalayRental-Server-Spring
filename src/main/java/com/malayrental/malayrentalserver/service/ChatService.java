@@ -7,4 +7,5 @@ public interface ChatService {
     int getChatList(Map<String, Object> data, java.util.List<java.util.Map<String, Object>> resultList);
     int getAllChatList(Map<String, Object> data, java.util.List<java.util.Map<String, Object>> resultList);
     int getAllMessages(Map<String, Object> data, java.util.List<java.util.Map<String, Object>> resultList);
+    int readChatMessages(Map<String, Object> data);
 } 
