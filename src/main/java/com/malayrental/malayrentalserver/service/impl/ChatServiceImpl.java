@@ -153,4 +153,44 @@ public class ChatServiceImpl implements ChatService {
             return 4; // 系统错误
         }
     }
+
+    @Override
+    public int getAllMessages(Map<String, Object> data, java.util.List<java.util.Map<String, Object>> resultList) {
+        if (data == null || data.get("runUser") == null || data.get("chatId") == null) {
+            return 1; // 参数不合法
+        }
+        String userId = data.get("runUser").toString();
+        String chatId = data.get("chatId").toString();
+        try {
+            UserAccount user = userAccountMapper.selectById(userId);
+            if (user == null) {
+                return 3; // 操作不合法
+            }
+            String role = user.getUserRole();
+            if (!("User".equals(role) || "Admin".equals(role) || "Staff".equals(role))) {
+                return 3; // 操作不合法
+            }
+            ChatList chat = chatListMapper.selectById(chatId);
+            if (chat == null) {
+                return 2; // 会话不存在
+            }
+            // 查询消息
+            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.malayrental.malayrentalserver.pojo.MessageList> msgWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+            msgWrapper.eq("chat_id", chatId).orderByAsc("create_time");
+            java.util.List<com.malayrental.malayrentalserver.pojo.MessageList> msgList = messageListMapper.selectList(msgWrapper);
+            for (com.malayrental.malayrentalserver.pojo.MessageList msg : msgList) {
+                java.util.Map<String, Object> item = new java.util.HashMap<>();
+                item.put("messageId", msg.getMessageId());
+                item.put("senderId", msg.getSenderId());
+                item.put("messageType", msg.getMessageType());
+                item.put("content", msg.getContent());
+                item.put("status", msg.getStatus());
+                item.put("createTime", msg.getCreateTime() != null ? msg.getCreateTime().toString().replace("T", " ") : null);
+                resultList.add(item);
+            }
+            return 0;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
 } 
