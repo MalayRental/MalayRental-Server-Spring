@@ -3,6 +3,7 @@ package com.malayrental.malayrentalserver.service.impl;
 import com.malayrental.malayrentalserver.dao.ChatListMapper;
 import com.malayrental.malayrentalserver.dao.UserAccountMapper;
 import com.malayrental.malayrentalserver.dao.MessageListMapper;
+import com.malayrental.malayrentalserver.pojo.MessageList;
 import com.malayrental.malayrentalserver.pojo.ChatList;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
 import com.malayrental.malayrentalserver.service.ChatService;
@@ -62,6 +63,33 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
+    private void buildChatList(java.util.List<ChatList> chatList, java.util.List<java.util.Map<String, Object>> resultList) {
+        for (ChatList chat : chatList) {
+            Map<String, Object> item = new java.util.HashMap<>();
+            item.put("chatId", chat.getChatId());
+            item.put("staffId", chat.getStaffId());
+            // 查staff信息
+            UserAccount staff = userAccountMapper.selectById(chat.getStaffId());
+            item.put("staffName", staff != null ? staff.getUserName() : null);
+            item.put("staffAvatar", staff != null ? staff.getAvatar() : null);
+            // 查最新消息
+            QueryWrapper<MessageList> msgWrapper = new QueryWrapper<>();
+            msgWrapper.eq("chat_id", chat.getChatId()).orderByDesc("create_time").last("limit 1");
+            java.util.List<MessageList> msgList = messageListMapper.selectList(msgWrapper);
+            if (!msgList.isEmpty()) {
+                MessageList msg = msgList.get(0);
+                item.put("lastMessageType", msg.getMessageType());
+                item.put("lastMessage", msg.getContent());
+                item.put("lastMessageTime", msg.getCreateTime() != null ? msg.getCreateTime().toString().replace("T", " ") : null);
+            } else {
+                item.put("lastMessageType", null);
+                item.put("lastMessage", null);
+                item.put("lastMessageTime", null);
+            }
+            resultList.add(item);
+        }
+    }
+
     @Override
     public int getChatList(Map<String, Object> data, java.util.List<java.util.Map<String, Object>> resultList) {
         if (data == null || data.get("runUser") == null) {
@@ -74,34 +102,10 @@ public class ChatServiceImpl implements ChatService {
                 return 2; // 用户不存在
             }
             // 查询chat_list
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.malayrental.malayrentalserver.pojo.ChatList> wrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+            QueryWrapper<ChatList> wrapper = new QueryWrapper<>();
             wrapper.eq("user_id", userId);
-            java.util.List<com.malayrental.malayrentalserver.pojo.ChatList> chatList = chatListMapper.selectList(wrapper);
-            for (com.malayrental.malayrentalserver.pojo.ChatList chat : chatList) {
-                Map<String, Object> item = new java.util.HashMap<>();
-                item.put("chatId", chat.getChatId());
-                item.put("staffId", chat.getStaffId());
-                // 查staff信息
-                UserAccount staff = userAccountMapper.selectById(chat.getStaffId());
-                item.put("staffName", staff != null ? staff.getUserName() : null);
-                item.put("staffAvatar", staff != null ? staff.getAvatar() : null);
-                // 查最新消息
-                com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.malayrental.malayrentalserver.pojo.MessageList> msgWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-                msgWrapper.eq("chat_id", chat.getChatId()).orderByDesc("create_time").last("limit 1");
-                java.util.List<com.malayrental.malayrentalserver.pojo.MessageList> msgList =
-                    messageListMapper.selectList(msgWrapper);
-                if (!msgList.isEmpty()) {
-                    com.malayrental.malayrentalserver.pojo.MessageList msg = msgList.get(0);
-                    item.put("lastMessageType", msg.getMessageType());
-                    item.put("lastMessage", msg.getContent());
-                    item.put("lastMessageTime", msg.getCreateTime() != null ? msg.getCreateTime().toString().replace("T", " ") : null);
-                } else {
-                    item.put("lastMessageType", null);
-                    item.put("lastMessage", null);
-                    item.put("lastMessageTime", null);
-                }
-                resultList.add(item);
-            }
+            java.util.List<ChatList> chatList = chatListMapper.selectList(wrapper);
+            buildChatList(chatList, resultList);
             return 0;
         } catch (Exception e) {
             return 4; // 系统错误
@@ -123,31 +127,8 @@ public class ChatServiceImpl implements ChatService {
                 return 3; // 操作不合法
             }
             // 查询所有chat_list
-            java.util.List<com.malayrental.malayrentalserver.pojo.ChatList> chatList = chatListMapper.selectList(null);
-            for (com.malayrental.malayrentalserver.pojo.ChatList chat : chatList) {
-                Map<String, Object> item = new java.util.HashMap<>();
-                item.put("chatId", chat.getChatId());
-                item.put("staffId", chat.getStaffId());
-                // 查staff信息
-                UserAccount staff = userAccountMapper.selectById(chat.getStaffId());
-                item.put("staffName", staff != null ? staff.getUserName() : null);
-                item.put("staffAvatar", staff != null ? staff.getAvatar() : null);
-                // 查最新消息
-                com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.malayrental.malayrentalserver.pojo.MessageList> msgWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-                msgWrapper.eq("chat_id", chat.getChatId()).orderByDesc("create_time").last("limit 1");
-                java.util.List<com.malayrental.malayrentalserver.pojo.MessageList> msgList = messageListMapper.selectList(msgWrapper);
-                if (!msgList.isEmpty()) {
-                    com.malayrental.malayrentalserver.pojo.MessageList msg = msgList.get(0);
-                    item.put("lastMessageType", msg.getMessageType());
-                    item.put("lastMessage", msg.getContent());
-                    item.put("lastMessageTime", msg.getCreateTime() != null ? msg.getCreateTime().toString().replace("T", " ") : null);
-                } else {
-                    item.put("lastMessageType", null);
-                    item.put("lastMessage", null);
-                    item.put("lastMessageTime", null);
-                }
-                resultList.add(item);
-            }
+            java.util.List<ChatList> chatList = chatListMapper.selectList(null);
+            buildChatList(chatList, resultList);
             return 0;
         } catch (Exception e) {
             return 4; // 系统错误
@@ -175,10 +156,10 @@ public class ChatServiceImpl implements ChatService {
                 return 2; // 会话不存在
             }
             // 查询消息
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.malayrental.malayrentalserver.pojo.MessageList> msgWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+            QueryWrapper<MessageList> msgWrapper = new QueryWrapper<>();
             msgWrapper.eq("chat_id", chatId).orderByAsc("create_time");
-            java.util.List<com.malayrental.malayrentalserver.pojo.MessageList> msgList = messageListMapper.selectList(msgWrapper);
-            for (com.malayrental.malayrentalserver.pojo.MessageList msg : msgList) {
+            java.util.List<MessageList> msgList = messageListMapper.selectList(msgWrapper);
+            for (MessageList msg : msgList) {
                 java.util.Map<String, Object> item = new java.util.HashMap<>();
                 item.put("messageId", msg.getMessageId());
                 item.put("senderId", msg.getSenderId());

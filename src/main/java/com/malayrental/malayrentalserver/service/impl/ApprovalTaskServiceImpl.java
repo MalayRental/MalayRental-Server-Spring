@@ -97,7 +97,7 @@ public class ApprovalTaskServiceImpl implements ApprovalTaskService {
                     String[] parts = command.split("]");
                     String houseId = parts[1].substring(1);
                     String statusValue = parts[3].substring(1);
-                    commandResult = ((com.malayrental.malayrentalserver.service.impl.HouseListServiceImpl)houseListService).setHouseStatus(houseId, statusValue);
+                    commandResult = ((HouseListServiceImpl)houseListService).setHouseStatus(houseId, statusValue);
                 } catch (Exception e) {
                     commandError = e.getMessage();
                 }
@@ -105,7 +105,7 @@ public class ApprovalTaskServiceImpl implements ApprovalTaskService {
                 try {
                     String[] parts = command.split("]");
                     String houseId = parts[1].substring(1);
-                    commandResult = ((com.malayrental.malayrentalserver.service.impl.HouseListServiceImpl)houseListService).deleteHouse(houseId);
+                    commandResult = ((HouseListServiceImpl)houseListService).deleteHouse(houseId);
                 } catch (Exception e) {
                     commandError = e.getMessage();
                 }
