@@ -1,7 +1,7 @@
 package com.malayrental.malayrentalserver.controller;
 
 import com.malayrental.malayrentalserver.common.ApiResponse;
-import com.malayrental.malayrentalserver.common.TokenInfo;
+import com.malayrental.malayrentalserver.security.TokenInfo;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
 import com.malayrental.malayrentalserver.service.UserAccountService;
 import jakarta.servlet.http.HttpServletRequest;

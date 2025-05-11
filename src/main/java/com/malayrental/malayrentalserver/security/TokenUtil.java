@@ -1,4 +1,4 @@
-package com.malayrental.malayrentalserver.common;
+package com.malayrental.malayrentalserver.security;
 
 import java.security.SecureRandom;
 import org.apache.commons.codec.binary.Hex;

@@ -1,7 +1,7 @@
 package com.malayrental.malayrentalserver.service;
 
 import com.malayrental.malayrentalserver.pojo.UserAccount;
-import com.malayrental.malayrentalserver.common.TokenInfo;
+import com.malayrental.malayrentalserver.security.TokenInfo;
 import java.util.Map;
 
 public interface UserAccountService {

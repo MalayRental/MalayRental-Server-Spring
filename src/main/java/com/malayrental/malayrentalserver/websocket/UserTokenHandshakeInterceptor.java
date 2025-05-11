@@ -1,4 +1,4 @@
-package com.malayrental.malayrentalserver.common;
+package com.malayrental.malayrentalserver.websocket;
 
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.socket.WebSocketHandler;

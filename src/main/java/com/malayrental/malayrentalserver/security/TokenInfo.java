@@ -1,4 +1,4 @@
-package com.malayrental.malayrentalserver.common;
+package com.malayrental.malayrentalserver.security;
 
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
