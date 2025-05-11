@@ -9,6 +9,7 @@ import com.malayrental.malayrentalserver.service.UserAccountService;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 
 @Component
 public class WebSocketServer extends TextWebSocketHandler {
@@ -16,15 +17,17 @@ public class WebSocketServer extends TextWebSocketHandler {
     private static final ConcurrentHashMap<String, WebSocketSession> userSessionMap = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Long> lastPingTimeMap = new ConcurrentHashMap<>();
     private final UserAccountService userAccountService;
+    private final ChatMessageHandler chatMessageHandler;
 
     @Autowired
-    public WebSocketServer(UserAccountService userAccountService) {
+    public WebSocketServer(UserAccountService userAccountService, ChatMessageHandler chatMessageHandler) {
         this.userAccountService = userAccountService;
+        this.chatMessageHandler = chatMessageHandler;
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::checkHeartbeats, 5, 5, TimeUnit.SECONDS);
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) throws Exception {
         String userId = getUserId(session);
         String token = getToken(session);
         log.info("WebSocket连接建立，userId={}, token={}", userId, token);
@@ -41,7 +44,7 @@ public class WebSocketServer extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
         String userId = getUserId(session);
         log.info("WebSocket连接关闭，userId={}, status={}", userId, status);
         if (userId != null) {
@@ -53,7 +56,7 @@ public class WebSocketServer extends TextWebSocketHandler {
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    protected void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) throws Exception {
         String userId = getUserId(session);
         String payload = message.getPayload();
         log.debug("收到消息，userId={}, payload={}", userId, payload);
@@ -62,6 +65,9 @@ public class WebSocketServer extends TextWebSocketHandler {
             lastPingTimeMap.put(userId, System.currentTimeMillis());
             session.sendMessage(new TextMessage("pong"));
             log.debug("收到心跳ping，已回复pong，userId={}", userId);
+        } else if (payload.startsWith("[Request][ChatService][SendMessage][")) {
+            String resp = chatMessageHandler.handleMessage(payload);
+            session.sendMessage(new TextMessage(resp));
         }
     }
 
@@ -82,13 +88,6 @@ public class WebSocketServer extends TextWebSocketHandler {
                 userAccountService.logout(java.util.Map.of("runUser", userId));
                 log.info("用户已登出（心跳超时），userId={}", userId);
             }
-        }
-    }
-
-    public void sendMessageToUser(String userId, String message) throws Exception {
-        WebSocketSession session = userSessionMap.get(userId);
-        if (session != null && session.isOpen()) {
-            session.sendMessage(new TextMessage(message));
         }
     }
 
