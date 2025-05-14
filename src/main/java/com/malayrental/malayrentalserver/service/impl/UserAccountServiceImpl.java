@@ -321,7 +321,28 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserAccount getUserById(String userId) {
-        if (userId == null) return null;
         return userAccountMapper.selectById(userId);
+    }
+
+    @Override
+    public int checkUserPermission(String userId) {
+        if (userId == null) {
+            return 2; // 无权限
+        }
+        try {
+            UserAccount user = userAccountMapper.selectById(userId);
+            if (user == null) {
+                return 1; // 用户不存在
+            }
+            // 检查用户角色是否为User、Admin或Staff
+            String role = user.getUserRole();
+            if ("User".equals(role) || "Admin".equals(role) || "Staff".equals(role)) {
+                return 0; // 有权限
+            } else {
+                return 2; // 无权限
+            }
+        } catch (Exception e) {
+            return 2; // 发生异常，视为无权限
+        }
     }
 }
