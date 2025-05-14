@@ -25,7 +25,7 @@ public class ImageServiceImpl implements ImageService {
     private final UserAccountService userAccountService;
     
     // 允许的图片类型
-    private final List<String> allowedTypes = Arrays.asList("avatar", "houseCover", "houseDetail", "chat");
+    private final List<String> allowedTypes = Arrays.asList("avatar", "houseCover", "houseDetail", "chat", "banner");
     
     // 允许的图片扩展名
     private final List<String> allowedExtensions = Arrays.asList(".jpg", ".jpeg", ".png", ".gif");

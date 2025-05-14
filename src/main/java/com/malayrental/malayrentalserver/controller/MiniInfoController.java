@@ -28,6 +28,11 @@ public class MiniInfoController {
         return data;
     }
 
+    /**
+     * 创建Banner图
+     * 图片应先通过 /api/images/upload/banner 接口上传
+     * 然后使用返回的文件名作为image参数
+     */
     @PostMapping("/createBanner")
     public ApiResponse createBanner(@RequestBody Map<String, Object> req) {
         Map<String, Object> data = parseDataMap(req);
@@ -68,6 +73,34 @@ public class MiniInfoController {
             }
             
             return ApiResponse.ok("获取Banner图列表成功", resultList);
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试");
+        }
+    }
+    
+    /**
+     * 更新Banner状态
+     * status: Enable - 启用, Disabled - 禁用
+     */
+    @PostMapping("/updateBannerStatus")
+    public ApiResponse updateBannerStatus(@RequestBody Map<String, Object> req) {
+        Map<String, Object> data = parseDataMap(req);
+        if (data == null) {
+            return ApiResponse.error(400, "参数不合法");
+        }
+        try {
+            int result = miniBannerService.updateBannerStatus(data);
+            return switch (result) {
+                case 0 -> {
+                    String status = data.get("status").toString();
+                    String message = "Enable".equals(status) ? "Banner已启用" : "Banner已禁用";
+                    yield ApiResponse.ok(message, null);
+                }
+                case 1 -> ApiResponse.error(400, "参数不合法");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                case 3 -> ApiResponse.error(400, "Banner不存在");
+                default -> ApiResponse.error(500, "系统错误请稍后再试");
+            };
         } catch (Exception e) {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }

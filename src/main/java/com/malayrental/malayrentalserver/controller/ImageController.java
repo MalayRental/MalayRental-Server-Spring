@@ -24,7 +24,7 @@ public class ImageController {
 
     /**
      * 下载图片
-     * @param type 图片类型：avatar, houseCover, houseDetail, chat
+     * @param type 图片类型：avatar, houseCover, houseDetail, chat, banner
      * @param filename 图片文件名
      * @return 图片文件
      */
@@ -57,7 +57,7 @@ public class ImageController {
 
     /**
      * 上传图片
-     * @param type 图片类型：avatar, houseCover, houseDetail, chat
+     * @param type 图片类型：avatar, houseCover, houseDetail, chat, banner
      * @param file 上传的文件
      * @param runUser 操作用户ID
      * @return 上传结果
