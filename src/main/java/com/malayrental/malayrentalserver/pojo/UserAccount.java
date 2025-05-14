@@ -47,4 +47,7 @@ public class UserAccount {
 
     @TableField("token_expired")
     private LocalDateTime tokenExpired;
+    
+    @TableField("open_id")
+    private String openId;
 }
