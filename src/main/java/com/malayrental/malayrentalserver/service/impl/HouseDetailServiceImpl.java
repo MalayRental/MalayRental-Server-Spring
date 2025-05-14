@@ -118,6 +118,35 @@ public class HouseDetailServiceImpl implements HouseDetailService {
             result.put("community", detail.getCommunity());
             result.put("createTime", detail.getCreateTime());
             result.put("updateTime", detail.getUpdateTime());
+
+            HouseList house = houseListMapper.selectById(houseId);
+            if (house != null) {
+                result.put("price", house.getPrice());
+                result.put("area", house.getArea());
+                result.put("orientation", house.getOrientation());
+                result.put("proportion", house.getProportion());
+                result.put("ownerId", house.getCreateUser());
+                UserAccount owner = userAccountMapper.selectById(house.getCreateUser());
+                if (owner != null) {
+                    result.put("ownerAvatar", owner.getAvatar());
+                    result.put("ownerName", owner.getUserName());
+                    result.put("ownerPhoneNumber", owner.getPhoneNumber());
+                } else {
+                    result.put("ownerAvatar", null);
+                    result.put("ownerName", null);
+                    result.put("ownerPhoneNumber", null);
+                }
+            } else {
+                result.put("price", null);
+                result.put("area", null);
+                result.put("orientation", null);
+                result.put("proportion", null);
+                result.put("ownerId", null);
+                result.put("ownerAvatar", null);
+                result.put("ownerName", null);
+                result.put("ownerPhoneNumber", null);
+            }
+
             // 增加favoriteStatus字段（如果有runUser参数）
             if (runUserId != null) {
                 java.util.Map<String, Object> favoriteResult = new java.util.HashMap<>();

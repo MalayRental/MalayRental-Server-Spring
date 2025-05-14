@@ -35,7 +35,7 @@ public class UserAccountController {
             String password = data.get("password") == null ? null : data.get("password").toString();
             int result = userAccountService.registerUser(userName, phone, avatar, password);
             return switch (result) {
-                case 0 -> ApiResponse.ok("注册成功，请登录", null);
+                case 0 -> ApiResponse.ok("注册成功", null);
                 case 1 -> ApiResponse.error(400, "账号已存在");
                 case 2 -> ApiResponse.error(400, "参数不合法");
                 default -> ApiResponse.error(500, "系统错误请稍后再试！");
@@ -224,7 +224,7 @@ public class UserAccountController {
             }
             Map<String, Object> data = (Map<String, Object>) dataObj;
             String phone = data.get("phoneNumber") == null ? null : data.get("phoneNumber").toString();
-            String userToken = data.get("user_token") == null ? null : data.get("user_token").toString();
+            String userToken = data.get("userToken") == null ? null : data.get("userToken").toString();
             String ip = request.getRemoteAddr();
             UserAccount[] userHolder = new UserAccount[1];
             int result = userAccountService.autoLogin(phone, userToken, ip, userHolder);
