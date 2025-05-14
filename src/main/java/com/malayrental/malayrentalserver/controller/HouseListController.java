@@ -47,17 +47,17 @@ public class HouseListController {
 
     @PostMapping("/getHouseList")
     public ApiResponse getHouseList(@RequestBody Map<String, Object> req) {
-        Map<String, Object> data = parseDataMap(req);
-        if (data == null) {
-            return ApiResponse.error(400, "参数不合法");
+        Object dataObj = req.get("data");
+        // 允许data为null
+        Map<String, Object> data = null;
+        if (dataObj instanceof Map) {
+            data = (Map<String, Object>) dataObj;
         }
         try {
             java.util.List<Map<String, Object>> resultList = new java.util.ArrayList<>();
             int result = houseListService.getHouseList(data, resultList);
             return switch (result) {
                 case 0 -> ApiResponse.ok("房源列表获取成功", resultList);
-                case 1 -> ApiResponse.error(400, "参数不合法");
-                case 2 -> ApiResponse.error(400, "操作不合法");
                 default -> ApiResponse.error(500, "系统错误请稍后再试");
             };
         } catch (Exception e) {
