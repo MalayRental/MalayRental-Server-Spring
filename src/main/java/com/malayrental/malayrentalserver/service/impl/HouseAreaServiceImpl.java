@@ -129,15 +129,7 @@ public class HouseAreaServiceImpl implements HouseAreaService {
 
     @Override
     public int getAreaList(Map<String, Object> data, java.util.List<Map<String, Object>> resultList) {
-        if (data == null || data.get("runUser") == null) {
-            return 1; // 参数不合法
-        }
-        String runUserId = data.get("runUser").toString();
         try {
-            UserAccount runUser = userAccountMapper.selectById(runUserId);
-            if (runUser == null) {
-                return 2; // 操作不合法
-            }
             java.util.List<HouseArea> list = houseAreaMapper.selectList(null);
             for (HouseArea area : list) {
                 java.util.Map<String, Object> map = new java.util.HashMap<>();

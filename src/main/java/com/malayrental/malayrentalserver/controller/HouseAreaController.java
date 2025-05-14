@@ -84,17 +84,14 @@ public class HouseAreaController {
     public ApiResponse getAreaList(@RequestBody Map<String, Object> req) {
         try {
             Object dataObj = req.get("data");
-            if (!(dataObj instanceof Map)) {
-                return ApiResponse.error(400, "参数不合法");
+            Map<String, Object> data = null;
+            if (dataObj instanceof Map) {
+                data = (Map<String, Object>) dataObj;
             }
-            @SuppressWarnings("unchecked")
-            Map<String, Object> data = (Map<String, Object>) dataObj;
             java.util.List<Map<String, Object>> resultList = new java.util.ArrayList<>();
             int result = houseAreaService.getAreaList(data, resultList);
             return switch (result) {
                 case 0 -> ApiResponse.ok("区域信息获取成功", resultList);
-                case 1 -> ApiResponse.error(400, "参数不合法");
-                case 2 -> ApiResponse.error(400, "操作不合法");
                 default -> ApiResponse.error(500, "系统错误请稍后再试");
             };
         } catch (Exception e) {
