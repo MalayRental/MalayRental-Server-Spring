@@ -90,10 +90,11 @@ public class HouseAreaController {
             }
             java.util.List<Map<String, Object>> resultList = new java.util.ArrayList<>();
             int result = houseAreaService.getAreaList(data, resultList);
-            return switch (result) {
-                case 0 -> ApiResponse.ok("区域信息获取成功", resultList);
-                default -> ApiResponse.error(500, "系统错误请稍后再试");
-            };
+            if (result == 0) {
+                return ApiResponse.ok("区域信息获取成功", resultList);
+            } else {
+                return ApiResponse.error(500, "系统错误请稍后再试");
+            }
         } catch (Exception e) {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }

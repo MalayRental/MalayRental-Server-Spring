@@ -11,6 +11,7 @@ public interface UserAccountService {
     String generateId(String prefix);
     int deleteUser(String runUserId, String userId);
     int registerUser(String userName, String phoneNumber, String avatar, String password);
+    int registerWxUser(String userName, String phoneNumber, String avatar, String password, String openId, UserAccount[] userHolder);
     int loginUser(String phoneNumber, String password, String ip, UserAccount[] userHolder);
     int updateUser(Map<String, Object> data);
     int banUser(Map<String, Object> data);
@@ -21,11 +22,5 @@ public interface UserAccountService {
     TokenInfo generateUserToken(String userId);
     int autoLogin(String phoneNumber, String userToken, String ip, UserAccount[] userHolder);
     UserAccount getUserById(String userId);
-    
-    /**
-     * 检查用户权限
-     * @param userId 用户ID
-     * @return 0-有权限，1-用户不存在，2-无权限
-     */
     int checkUserPermission(String userId);
 }

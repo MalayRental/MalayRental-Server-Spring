@@ -9,6 +9,13 @@ public class ApiResponse {
     private String message;
     private long timestamp;
     private Object data;
+    
+    public ApiResponse(int code, String message, long timestamp, Object data) {
+        this.code = code;
+        this.message = message;
+        this.timestamp = timestamp;
+        this.data = data;
+    }
 
     public static ApiResponse ok(String message, Object content) {
         ApiResponse r = new ApiResponse();
@@ -26,5 +33,9 @@ public class ApiResponse {
         r.timestamp = Instant.now().toEpochMilli();
         r.data = null;
         return r;
+    }
+    
+    // 默认构造函数
+    public ApiResponse() {
     }
 }

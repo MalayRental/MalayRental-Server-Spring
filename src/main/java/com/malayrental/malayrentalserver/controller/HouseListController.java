@@ -45,6 +45,7 @@ public class HouseListController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @PostMapping("/getHouseList")
     public ApiResponse getHouseList(@RequestBody Map<String, Object> req) {
         Object dataObj = req.get("data");
@@ -56,10 +57,11 @@ public class HouseListController {
         try {
             java.util.List<Map<String, Object>> resultList = new java.util.ArrayList<>();
             int result = houseListService.getHouseList(data, resultList);
-            return switch (result) {
-                case 0 -> ApiResponse.ok("房源列表获取成功", resultList);
-                default -> ApiResponse.error(500, "系统错误请稍后再试");
-            };
+            if (result == 0) {
+                return ApiResponse.ok("房源列表获取成功", resultList);
+            } else {
+                return ApiResponse.error(500, "系统错误请稍后再试");
+            }
         } catch (Exception e) {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }

@@ -23,6 +23,21 @@ public class UserAccountServiceImpl implements UserAccountService {
     public UserAccountServiceImpl(UserAccountMapper userAccountMapper) {
         this.userAccountMapper = userAccountMapper;
     }
+    
+    /**
+     * 创建包含用户基本信息的Map
+     * @param user 用户账号对象
+     * @return 包含用户基本信息的Map
+     */
+    public static Map<String, Object> createUserBasicInfoMap(UserAccount user) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", user.getUserId());
+        map.put("userName", user.getUserName());
+        map.put("phoneNumber", user.getPhoneNumber());
+        map.put("avatar", user.getAvatar());
+        map.put("userRole", user.getUserRole());
+        return map;
+    }
 
     @Override
     public boolean register(UserAccount user) {
@@ -55,10 +70,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         return IdGeneratorUtil.generateId(userAccountMapper, "user_id", prefix);
     }
 
-    /**
-     * 校验操作人和目标用户
-     * @return 0-校验通过，1-目标账号不存在，2-操作不合法
-     */
     private int checkAdminAndTarget(String runUserId, String userId) {
         UserAccount runUser = userAccountMapper.selectById(runUserId);
         if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
@@ -69,6 +80,22 @@ public class UserAccountServiceImpl implements UserAccountService {
             return 1; // 目标账号不存在
         }
         return 0;
+    }
+
+    private UserAccount createUserAccount(String userName, String phoneNumber, String avatar, String password, String openId) {
+        UserAccount user = new UserAccount();
+        user.setUserId(generateId("U"));
+        user.setUserName(userName);
+        user.setPhoneNumber(phoneNumber);
+        user.setAvatar(avatar);
+        user.setPassword(password);
+        user.setUserRole("User");
+        user.setStatus("Normal");
+        user.setCreateTime(LocalDateTime.now());
+        if (openId != null) {
+            user.setOpenId(openId);
+        }
+        return user;
     }
 
     @Override
@@ -95,17 +122,41 @@ public class UserAccountServiceImpl implements UserAccountService {
             if (existsByPhone(phoneNumber)) {
                 return 1; // 账号已存在
             }
-            UserAccount user = new UserAccount();
-            user.setUserId(generateId("U"));
-            user.setUserName(userName);
-            user.setPhoneNumber(phoneNumber);
-            user.setAvatar(avatar);
-            user.setPassword(password);
-            user.setUserRole("User");
-            user.setStatus("Normal");
-            user.setCreateTime(LocalDateTime.now());
+            UserAccount user = createUserAccount(userName, phoneNumber, avatar, password, null);
             // 注册时不设置登录时间和登录IP
             return register(user) ? 0 : 3;
+        } catch (Exception e) {
+            return 3; // 系统错误
+        }
+    }
+
+    @Override
+    public int registerWxUser(String userName, String phoneNumber, String avatar, String password, String openId, UserAccount[] userHolder) {
+        if (userName == null || phoneNumber == null || avatar == null || password == null || openId == null) {
+            return 2; // 参数不合法
+        }
+        try {
+            if (existsByPhone(phoneNumber)) {
+                return 1; // 账号已存在
+            }
+            UserAccount user = createUserAccount(userName, phoneNumber, avatar, password, openId);
+            user.setLastLoginTime(LocalDateTime.now());
+            user.setOnlineStatus("online");
+            
+            // 生成token
+            TokenInfo tokenInfo = generateUserToken(user.getUserId());
+            if (tokenInfo != null) {
+                user.setUserToken(tokenInfo.token());
+                user.setTokenExpired(tokenInfo.expired());
+            }
+            
+            boolean success = register(user);
+            if (success) {
+                userHolder[0] = user;
+                return 0;
+            } else {
+                return 3; // 系统错误
+            }
         } catch (Exception e) {
             return 3; // 系统错误
         }
@@ -232,12 +283,7 @@ public class UserAccountServiceImpl implements UserAccountService {
             }
             List<UserAccount> userList = userAccountMapper.selectList(new QueryWrapper<>());
             for (UserAccount user : userList) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("userId", user.getUserId());
-                map.put("userName", user.getUserName());
-                map.put("phoneNumber", user.getPhoneNumber());
-                map.put("avatar", user.getAvatar());
-                map.put("userRole", user.getUserRole());
+                Map<String, Object> map = createUserBasicInfoMap(user);
                 map.put("status", user.getStatus());
                 resultList.add(map);
             }
