@@ -89,18 +89,15 @@ public class HouseDetailServiceImpl implements HouseDetailService {
 
     @Override
     public int getHouseDetail(Map<String, Object> data, java.util.Map<String, Object> result) {
-        if (data == null || data.get("runUser") == null || data.get("houseId") == null) {
+        if (data == null || data.get("houseId") == null) {
             return 1; // 参数不合法
         }
-        String runUserId = data.get("runUser").toString();
         String houseId = data.get("houseId").toString();
+        String runUserId = data.get("runUser") == null ? null : data.get("runUser").toString();
         try {
-            // 新增：自动添加浏览历史
-            addBrowserHistory(runUserId, houseId);
-            UserAccount runUser = userAccountMapper.selectById(runUserId);
-            if (runUser == null || runUser.getUserRole() == null ||
-                !("Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()) || "User".equals(runUser.getUserRole()))) {
-                return 2; // 操作不合法
+            // 新增：自动添加浏览历史（如果有runUser参数）
+            if (runUserId != null) {
+                addBrowserHistory(runUserId, houseId);
             }
             HouseDetail detail = houseDetailMapper.selectById(houseId);
             if (detail == null) {
@@ -121,14 +118,15 @@ public class HouseDetailServiceImpl implements HouseDetailService {
             result.put("community", detail.getCommunity());
             result.put("createTime", detail.getCreateTime());
             result.put("updateTime", detail.getUpdateTime());
-            // 增加favoriteStatus字段
-            java.util.Map<String, Object> favoriteResult = new java.util.HashMap<>();
-            int favoriteCode = userFavoriteService.checkFavoriteStatus(data, favoriteResult);
-            if (favoriteCode == 0) {
-                // 规范：favoriteStatus为布尔类型
-                result.put("favoriteStatus", "true".equals(favoriteResult.get("status")));
-            } else {
-                result.put("favoriteStatus", false);
+            // 增加favoriteStatus字段（如果有runUser参数）
+            if (runUserId != null) {
+                java.util.Map<String, Object> favoriteResult = new java.util.HashMap<>();
+                int favoriteCode = userFavoriteService.checkFavoriteStatus(data, favoriteResult);
+                if (favoriteCode == 0) {
+                    result.put("favoriteStatus", "true".equals(favoriteResult.get("status")));
+                } else {
+                    result.put("favoriteStatus", false);
+                }
             }
             return 0;
         } catch (Exception e) {
