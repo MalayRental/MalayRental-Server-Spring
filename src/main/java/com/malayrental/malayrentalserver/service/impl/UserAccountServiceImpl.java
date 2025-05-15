@@ -52,8 +52,6 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (user != null) {
             user.setLastLoginTime(LocalDateTime.now());
             user.setLastLoginIp(ip);
-            user.setOnlineStatus("online");
-            userAccountMapper.updateById(user);
         }
         return user;
     }
@@ -141,7 +139,6 @@ public class UserAccountServiceImpl implements UserAccountService {
             }
             UserAccount user = createUserAccount(userName, phoneNumber, avatar, password, openId);
             user.setLastLoginTime(LocalDateTime.now());
-            user.setOnlineStatus("online");
             
             // 生成token
             TokenInfo tokenInfo = generateUserToken(user.getUserId());
