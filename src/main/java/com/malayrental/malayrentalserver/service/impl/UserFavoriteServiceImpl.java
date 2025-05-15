@@ -110,7 +110,9 @@ public class UserFavoriteServiceImpl implements UserFavoriteService {
                 map.put("favoriteId", favorite.getFavoriteId());
                 HouseList house = houseListMapper.selectById(favorite.getHouseId());
                 if (house != null) {
-                    map.put("houseInfo", buildHouseInfo(house));
+                    Map<String, Object> houseInfo = new HashMap<>();
+                    HouseDetailServiceImpl.buildHouseInfo(house, houseInfo);
+                    map.put("houseInfo", houseInfo);
                 }
                 resultList.add(map);
             }
@@ -140,20 +142,5 @@ public class UserFavoriteServiceImpl implements UserFavoriteService {
         } catch (Exception e) {
             return 5; // 系统错误
         }
-    }
-
-    private Map<String, Object> buildHouseInfo(HouseList house) {
-        Map<String, Object> houseInfo = new HashMap<>();
-        houseInfo.put("houseId", house.getHouseId());
-        houseInfo.put("houseName", house.getHouseName());
-        houseInfo.put("area", house.getArea());
-        houseInfo.put("orientation", house.getOrientation());
-        houseInfo.put("proportion", house.getProportion());
-        houseInfo.put("coverImage", house.getCoverImage());
-        houseInfo.put("createUser", house.getCreateUser());
-        houseInfo.put("createTime", house.getCreateTime());
-        houseInfo.put("updateTime", house.getUpdateTime());
-        houseInfo.put("status", house.getStatus());
-        return houseInfo;
     }
 } 

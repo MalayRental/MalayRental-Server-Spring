@@ -251,4 +251,18 @@ public class HouseDetailServiceImpl implements HouseDetailService {
     public void addBrowserHistory(String userId, String houseId) {
         userBrowserHistoryService.addHistory(userId, houseId);
     }
+
+
+    static void buildHouseInfo(HouseList house, Map<String, Object> houseInfo) {
+        houseInfo.put("houseId", house.getHouseId());
+        houseInfo.put("houseName", house.getHouseName());
+        houseInfo.put("area", house.getArea());
+        houseInfo.put("price", house.getPrice());
+        houseInfo.put("orientation", house.getOrientation());
+        houseInfo.put("proportion", house.getProportion());
+        houseInfo.put("coverImage", house.getCoverImage());
+        houseInfo.put("createUser", house.getCreateUser());
+        houseInfo.put("createTime", house.getCreateTime());
+        houseInfo.put("updateTime", house.getUpdateTime());
+    }
 } 

@@ -57,22 +57,21 @@ public class UserBrowserHistoryServiceImpl implements UserBrowserHistoryService 
             }
             QueryWrapper<UserBrowserHistory> wrapper = new QueryWrapper<>();
             wrapper.eq("user_id", runUserId);
+            wrapper.orderByDesc("create_time"); // 按时间降序排列
             List<UserBrowserHistory> historyList = userBrowserHistoryMapper.selectList(wrapper);
+            // 用于去重，只保留每个 houseId 最新的一条
+            java.util.Set<String> seenHouseIds = new java.util.HashSet<>();
             for (UserBrowserHistory history : historyList) {
+                if (seenHouseIds.contains(history.getHouseId())) {
+                    continue;
+                }
+                seenHouseIds.add(history.getHouseId());
                 Map<String, Object> map = new HashMap<>();
                 map.put("historyId", history.getHistoryId());
                 HouseList house = houseListMapper.selectById(history.getHouseId());
                 if (house != null) {
                     Map<String, Object> houseInfo = new HashMap<>();
-                    houseInfo.put("houseId", house.getHouseId());
-                    houseInfo.put("houseName", house.getHouseName());
-                    houseInfo.put("area", house.getArea());
-                    houseInfo.put("orientation", house.getOrientation());
-                    houseInfo.put("proportion", house.getProportion());
-                    houseInfo.put("coverImage", house.getCoverImage());
-                    houseInfo.put("createUser", house.getCreateUser());
-                    houseInfo.put("createTime", house.getCreateTime());
-                    houseInfo.put("updateTime", house.getUpdateTime());
+                    HouseDetailServiceImpl.buildHouseInfo(house, houseInfo);
                     map.put("houseInfo", houseInfo);
                 }
                 resultList.add(map);
