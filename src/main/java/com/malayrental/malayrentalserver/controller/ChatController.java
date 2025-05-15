@@ -56,7 +56,7 @@ public class ChatController {
                 case 0 -> ApiResponse.ok("创建会话成功", result);
                 case 1 -> ApiResponse.error(400, "参数不合法");
                 case 2 -> ApiResponse.error(400, "用户不存在");
-                case 3 -> ApiResponse.error(400, "对话已存在");
+                case 3 -> ApiResponse.ok("会话已经存在", result);
                 case 5 -> ApiResponse.error(400, "您无法向自己发起会话");
                 default -> ApiResponse.error(500, "系统错误请稍后再试");
             };

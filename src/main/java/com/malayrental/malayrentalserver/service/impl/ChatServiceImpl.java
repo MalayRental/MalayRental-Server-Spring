@@ -43,7 +43,13 @@ public class ChatServiceImpl implements ChatService {
             }
             QueryWrapper<ChatList> wrapper = new QueryWrapper<>();
             wrapper.eq("user_id", userId).eq("staff_id", staffId);
-            if (chatListMapper.selectCount(wrapper) > 0) {
+            ChatList existChat = chatListMapper.selectOne(wrapper);
+            if (existChat != null) {
+                result.put("chatId", existChat.getChatId());
+                result.put("staffAvatar", staff.getAvatar());
+                result.put("staffStatus", staff.getOnlineStatus());
+                result.put("staffName", staff.getUserName());
+                result.put("staffId", staffId);
                 return 3; // 对话已存在
             }
             ChatList chat = new ChatList();
@@ -54,6 +60,10 @@ public class ChatServiceImpl implements ChatService {
             int rows = chatListMapper.insert(chat);
             if (rows > 0) {
                 result.put("chatId", chat.getChatId());
+                result.put("staffAvatar", staff.getAvatar());
+                result.put("staffStatus", staff.getOnlineStatus());
+                result.put("staffName", staff.getUserName());
+                result.put("staffId", staffId);
                 return 0;
             } else {
                 return 4; // 系统错误
