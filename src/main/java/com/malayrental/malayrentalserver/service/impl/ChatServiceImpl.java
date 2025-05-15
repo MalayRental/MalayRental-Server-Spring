@@ -72,6 +72,7 @@ public class ChatServiceImpl implements ChatService {
             UserAccount staff = userAccountMapper.selectById(chat.getStaffId());
             item.put("staffName", staff != null ? staff.getUserName() : null);
             item.put("staffAvatar", staff != null ? staff.getAvatar() : null);
+            item.put("staffStatus", staff != null ? staff.getOnlineStatus() : null);
             // 查最新消息
             QueryWrapper<MessageList> msgWrapper = new QueryWrapper<>();
             msgWrapper.eq("chat_id", chat.getChatId()).orderByDesc("create_time").last("limit 1");
