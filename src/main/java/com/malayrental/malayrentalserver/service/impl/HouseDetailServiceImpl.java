@@ -126,6 +126,7 @@ public class HouseDetailServiceImpl implements HouseDetailService {
                 result.put("orientation", house.getOrientation());
                 result.put("proportion", house.getProportion());
                 result.put("coverImage", house.getCoverImage());
+                result.put("houseName", house.getHouseName());
                 result.put("ownerId", house.getCreateUser());
                 UserAccount owner = userAccountMapper.selectById(house.getCreateUser());
                 if (owner != null) {
@@ -143,6 +144,7 @@ public class HouseDetailServiceImpl implements HouseDetailService {
                 result.put("orientation", null);
                 result.put("proportion", null);
                 result.put("coverImage", null);
+                result.put("houseName", null);
                 result.put("ownerId", null);
                 result.put("ownerAvatar", null);
                 result.put("ownerName", null);
