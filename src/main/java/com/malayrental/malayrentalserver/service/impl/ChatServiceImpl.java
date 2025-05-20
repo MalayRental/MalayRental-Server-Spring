@@ -77,6 +77,7 @@ public class ChatServiceImpl implements ChatService {
         for (ChatList chat : chatList) {
             Map<String, Object> item = new java.util.HashMap<>();
             item.put("chatId", chat.getChatId());
+            item.put("userId", chat.getUserId());
             item.put("staffId", chat.getStaffId());
             // 查staff信息
             UserAccount staff = userAccountMapper.selectById(chat.getStaffId());
