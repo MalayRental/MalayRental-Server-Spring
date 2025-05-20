@@ -4,22 +4,28 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.malayrental.malayrentalserver.common.IdGeneratorUtil;
 import com.malayrental.malayrentalserver.dao.HouseAreaMapper;
 import com.malayrental.malayrentalserver.dao.UserAccountMapper;
+import com.malayrental.malayrentalserver.dao.HouseListMapper;
 import com.malayrental.malayrentalserver.pojo.HouseArea;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
+import com.malayrental.malayrentalserver.pojo.HouseList;
 import com.malayrental.malayrentalserver.service.HouseAreaService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 
 @Service
 public class HouseAreaServiceImpl implements HouseAreaService {
     private final HouseAreaMapper houseAreaMapper;
     private final UserAccountMapper userAccountMapper;
+    private final HouseListMapper houseListMapper;
 
-    public HouseAreaServiceImpl(HouseAreaMapper houseAreaMapper, UserAccountMapper userAccountMapper) {
+    public HouseAreaServiceImpl(HouseAreaMapper houseAreaMapper, UserAccountMapper userAccountMapper, HouseListMapper houseListMapper) {
         this.houseAreaMapper = houseAreaMapper;
         this.userAccountMapper = userAccountMapper;
+        this.houseListMapper = houseListMapper;
     }
 
     @Override
@@ -163,6 +169,36 @@ public class HouseAreaServiceImpl implements HouseAreaService {
             result.put("createUser", area.getCreateUser());
             result.put("updateTime", area.getUpdateTime());
             result.put("createTime", area.getCreateTime());
+            return 0;
+        } catch (Exception e) {
+            return 4; // 系统错误
+        }
+    }
+
+    @Override
+    public int getAreaListWithAdminInfo(String runUserId, List<Map<String, Object>> resultList) {
+        try {
+            UserAccount user = userAccountMapper.selectById(runUserId);
+            if (user == null || user.getUserRole() == null || !"Admin".equals(user.getUserRole())) {
+                return 2; // 无权限
+            }
+            List<HouseArea> areaList = houseAreaMapper.selectList(null);
+            for (HouseArea area : areaList) {
+                QueryWrapper<HouseList> houseQw = new QueryWrapper<>();
+                houseQw.eq("area", area.getAreaName());
+                long houseCount = houseListMapper.selectCount(houseQw);
+                Map<String, Object> map = new HashMap<>();
+                map.put("areaId", area.getAreaId());
+                map.put("address", area.getAddress());
+                map.put("areaName", area.getAreaName());
+                map.put("createTime", area.getCreateTime() != null ? area.getCreateTime().toString() : null);
+                map.put("createUser", area.getCreateUser());
+                map.put("updateTime", area.getUpdateTime() != null ? area.getUpdateTime().toString() : null);
+                map.put("latLng", area.getLatLng());
+                map.put("desc", area.getDesc());
+                map.put("houseCount", String.valueOf(houseCount));
+                resultList.add(map);
+            }
             return 0;
         } catch (Exception e) {
             return 4; // 系统错误

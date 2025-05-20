@@ -4,6 +4,8 @@ import com.malayrental.malayrentalserver.common.ApiResponse;
 import com.malayrental.malayrentalserver.service.HouseAreaService;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 @SuppressWarnings("unchecked")
 @RestController
@@ -88,7 +90,19 @@ public class HouseAreaController {
             if (dataObj instanceof Map) {
                 data = (Map<String, Object>) dataObj;
             }
-            java.util.List<Map<String, Object>> resultList = new java.util.ArrayList<>();
+            List<Map<String, Object>> resultList = new ArrayList<>();
+            // 检查是否有runUser字段
+            if (data != null && data.get("runUser") != null) {
+                String runUserId = data.get("runUser").toString();
+                int result = houseAreaService.getAreaListWithAdminInfo(runUserId, resultList);
+                if (result == 0) {
+                    return ApiResponse.ok("区域信息获取成功", resultList);
+                } else if (result == 2) {
+                    return ApiResponse.error(403, "无权限");
+                } else {
+                    return ApiResponse.error(500, "系统错误请稍后再试");
+                }
+            }
             int result = houseAreaService.getAreaList(data, resultList);
             if (result == 0) {
                 return ApiResponse.ok("区域信息获取成功", resultList);
