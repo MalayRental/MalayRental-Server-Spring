@@ -69,6 +69,7 @@ public class MiniInfoController {
                 item.put("bannerId", banner.getBannerId());
                 item.put("image", banner.getImage());
                 item.put("link", banner.getLink());
+                item.put("status", banner.getStatus());
                 resultList.add(item);
             }
             
