@@ -21,12 +21,14 @@ public class HouseListServiceImpl implements HouseListService {
     }
 
     @Override
-    public int createHouseItem(Map<String, Object> data) {
+    public Map<String, Object> createHouseItem(Map<String, Object> data) {
+        Map<String, Object> resultMap = new java.util.HashMap<>();
         if (data == null || data.get("runUser") == null || data.get("houseName") == null
                 || data.get("area") == null || data.get("orientation") == null
                 || data.get("proportion") == null || data.get("coverImage") == null
                 || data.get("price") == null) {
-            return 1; // 参数不合法
+            resultMap.put("code", 1);
+            return resultMap;
         }
         String runUserId = data.get("runUser").toString();
         String houseName = data.get("houseName").toString();
@@ -39,15 +41,18 @@ public class HouseListServiceImpl implements HouseListService {
             UserAccount runUser = userAccountMapper.selectById(runUserId);
             if (runUser == null || 
                 !( "Admin".equals(runUser.getUserRole()) || "Staff".equals(runUser.getUserRole()) )) {
-                return 2; // 操作不合法
+                resultMap.put("code", 2);
+                return resultMap;
             }
             QueryWrapper<HouseList> wrapper = new QueryWrapper<>();
             wrapper.eq("house_name", houseName);
             if (houseListMapper.selectCount(wrapper) > 0) {
-                return 3; // 房源已存在
+                resultMap.put("code", 3);
+                return resultMap;
             }
             HouseList house = new HouseList();
-            house.setHouseId(IdGeneratorUtil.generateId(houseListMapper, "house_id", "H"));
+            String houseId = IdGeneratorUtil.generateId(houseListMapper, "house_id", "H");
+            house.setHouseId(houseId);
             house.setHouseName(houseName);
             house.setArea(area);
             house.setOrientation(orientation);
@@ -63,9 +68,21 @@ public class HouseListServiceImpl implements HouseListService {
                 house.setStatus("Pending");
             }
             int rows = houseListMapper.insert(house);
-            return rows > 0 ? ("Admin".equals(runUser.getUserRole()) ? 0 : 4) : 5; // 0-Admin成功, 4-Staff成功, 5-系统错误
+            if (rows > 0) {
+                if ("Admin".equals(runUser.getUserRole())) {
+                    resultMap.put("code", 0);
+                } else {
+                    resultMap.put("code", 4);
+                }
+                resultMap.put("houseId", houseId);
+                return resultMap;
+            } else {
+                resultMap.put("code", 5);
+                return resultMap;
+            }
         } catch (Exception e) {
-            return 5; // 系统错误
+            resultMap.put("code", 5);
+            return resultMap;
         }
     }
 

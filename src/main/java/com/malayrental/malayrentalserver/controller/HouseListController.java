@@ -31,13 +31,15 @@ public class HouseListController {
             return ApiResponse.error(400, "参数不合法");
         }
         try {
-            int result = houseListService.createHouseItem(data);
-            return switch (result) {
-                case 0 -> ApiResponse.ok("房源项发布成功", null);
+            Map<String, Object> result = houseListService.createHouseItem(data);
+            int code = (int) result.get("code");
+            return switch (code) {
+                case 0 -> ApiResponse.ok("房源项发布成功", Map.of("houseId", result.get("houseId")));
                 case 1 -> ApiResponse.error(400, "参数不合法");
                 case 2 -> ApiResponse.error(400, "操作不合法");
                 case 3 -> ApiResponse.error(400, "房源已存在");
-                case 4 -> ApiResponse.ok("已创建房源发布审批，审批通过后方可显示", null);
+                case 4 ->
+                        ApiResponse.ok("已创建房源发布审批，审批通过后方可显示", Map.of("houseId", result.get("houseId")));
                 default -> ApiResponse.error(500, "系统错误请稍后再试");
             };
         } catch (Exception e) {
