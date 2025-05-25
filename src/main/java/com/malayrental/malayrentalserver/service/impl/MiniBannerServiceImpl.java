@@ -73,7 +73,6 @@ public class MiniBannerServiceImpl implements MiniBannerService {
     public List<MiniBanner> getBannerList() {
         try {
             QueryWrapper<MiniBanner> wrapper = new QueryWrapper<>();
-            wrapper.eq("status", "Enable");
             return miniBannerMapper.selectList(wrapper);
         } catch (Exception e) {
             return null;
