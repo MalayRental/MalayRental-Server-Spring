@@ -101,14 +101,6 @@ public class ApprovalTaskServiceImpl implements ApprovalTaskService {
                 } catch (Exception e) {
                     commandError = e.getMessage();
                 }
-            } else if (command != null && command.startsWith("[house_list][") && command.contains("][Delete]")) {
-                try {
-                    String[] parts = command.split("]");
-                    String houseId = parts[1].substring(1);
-                    commandResult = ((HouseListServiceImpl)houseListService).deleteHouse(houseId);
-                } catch (Exception e) {
-                    commandError = e.getMessage();
-                }
             } else {
                 return 4; // 未知命令，执行失败
             }
@@ -118,7 +110,8 @@ public class ApprovalTaskServiceImpl implements ApprovalTaskService {
             if (!commandResult) {
                 return 6;
             }
-            task.setStatus(status);
+            // 审批通过，设置审批任务状态为Agreed
+            task.setStatus("Agreed");
             task.setFinishUser(runUserId);
             task.setFinishTime(LocalDateTime.now());
             int rows = approvalTaskMapper.updateById(task);

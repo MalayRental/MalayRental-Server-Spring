@@ -161,7 +161,7 @@ public class HouseListServiceImpl implements HouseListService {
     }
 
     public boolean setHouseStatus(String houseId, String status) {
-        if (!"Normal".equals(status) && !"Rejected".equals(status)) {
+        if (!"Normal".equals(status) && !"Rejected".equals(status) && !"Deleted".equals(status)) {
             return false;
         }
         try {
@@ -170,14 +170,6 @@ public class HouseListServiceImpl implements HouseListService {
             house.setStatus(status);
             house.setUpdateTime(java.time.LocalDateTime.now());
             return houseListMapper.updateById(house) > 0;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public boolean deleteHouse(String houseId) {
-        try {
-            return houseListMapper.deleteById(houseId) > 0;
         } catch (Exception e) {
             return false;
         }
