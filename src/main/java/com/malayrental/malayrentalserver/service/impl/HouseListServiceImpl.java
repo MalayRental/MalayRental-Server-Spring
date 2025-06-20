@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.malayrental.malayrentalserver.common.IdGeneratorUtil;
 import com.malayrental.malayrentalserver.dao.HouseListMapper;
 import com.malayrental.malayrentalserver.dao.UserAccountMapper;
+import com.malayrental.malayrentalserver.dao.HouseDetailMapper;
 import com.malayrental.malayrentalserver.pojo.HouseList;
 import com.malayrental.malayrentalserver.pojo.UserAccount;
+import com.malayrental.malayrentalserver.pojo.HouseDetail;
 import com.malayrental.malayrentalserver.service.HouseListService;
 import org.springframework.stereotype.Service;
 import java.util.Map;
@@ -14,10 +16,12 @@ import java.util.Map;
 public class HouseListServiceImpl implements HouseListService {
     private final HouseListMapper houseListMapper;
     private final UserAccountMapper userAccountMapper;
+    private final HouseDetailMapper houseDetailMapper;
 
-    public HouseListServiceImpl(HouseListMapper houseListMapper, UserAccountMapper userAccountMapper) {
+    public HouseListServiceImpl(HouseListMapper houseListMapper, UserAccountMapper userAccountMapper, HouseDetailMapper houseDetailMapper) {
         this.houseListMapper = houseListMapper;
         this.userAccountMapper = userAccountMapper;
+        this.houseDetailMapper = houseDetailMapper;
     }
 
     @Override
@@ -103,6 +107,8 @@ public class HouseListServiceImpl implements HouseListService {
                 map.put("createUser", house.getCreateUser());
                 map.put("createTime", house.getCreateTime());
                 map.put("updateTime", house.getUpdateTime());
+                HouseDetail detail = houseDetailMapper.selectById(house.getHouseId());
+                map.put("lat_lng", detail != null ? detail.getLatLng() : null);
                 resultList.add(map);
             }
             return 0;
