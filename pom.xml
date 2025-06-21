@@ -80,6 +80,7 @@
     </dependencyManagement>
 
     <build>
+        <finalName>malayrental-server</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
