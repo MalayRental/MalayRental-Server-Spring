@@ -115,4 +115,59 @@ public class MiniBannerServiceImpl implements MiniBannerService {
             return 5; // 系统错误
         }
     }
+
+    @Override
+    public int editBanner(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null || data.get("bannerId") == null || data.get("link") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String bannerId = data.get("bannerId").toString();
+        String link = data.get("link").toString();
+        try {
+            // 检查操作用户是否为Admin
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
+                return 2; // 操作不合法
+            }
+            // 检查Banner是否存在
+            MiniBanner banner = miniBannerMapper.selectById(bannerId);
+            if (banner == null) {
+                return 3; // Banner不存在
+            }
+            // 更新link
+            banner.setLink(link);
+            int result = miniBannerMapper.updateById(banner);
+            return result > 0 ? 0 : 5; // 0-成功，5-系统错误
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
+
+    @Override
+    public int deleteBanner(Map<String, Object> data) {
+        if (data == null || data.get("runUser") == null || data.get("bannerId") == null) {
+            return 1; // 参数不合法
+        }
+        String runUserId = data.get("runUser").toString();
+        String bannerId = data.get("bannerId").toString();
+        try {
+            // 检查操作用户是否为Admin
+            UserAccount runUser = userAccountMapper.selectById(runUserId);
+            if (runUser == null || !"Admin".equals(runUser.getUserRole())) {
+                return 2; // 操作不合法
+            }
+            // 检查Banner是否存在
+            MiniBanner banner = miniBannerMapper.selectById(bannerId);
+            if (banner == null) {
+                return 3; // Banner不存在
+            }
+            // 逻辑删除，status设为Deleted
+            banner.setStatus("Deleted");
+            int result = miniBannerMapper.updateById(banner);
+            return result > 0 ? 0 : 5; // 0-成功，5-系统错误
+        } catch (Exception e) {
+            return 5; // 系统错误
+        }
+    }
 }

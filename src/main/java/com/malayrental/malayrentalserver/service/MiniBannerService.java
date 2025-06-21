@@ -24,4 +24,18 @@ public interface MiniBannerService {
      * @return 0-成功，1-参数不合法，2-操作不合法，3-Banner不存在，5-系统错误
      */
     int updateBannerStatus(Map<String, Object> data);
+    
+    /**
+     * 编辑Banner链接
+     * @param data 包含bannerId、link、runUser
+     * @return 0-成功，1-参数不合法，2-操作不合法，3-Banner不存在，5-系统错误
+     */
+    int editBanner(Map<String, Object> data);
+    
+    /**
+     * 删除Banner（逻辑删除，status设为Deleted）
+     * @param data 包含bannerId、runUser
+     * @return 0-成功，1-参数不合法，2-操作不合法，3-Banner不存在，5-系统错误
+     */
+    int deleteBanner(Map<String, Object> data);
 } 

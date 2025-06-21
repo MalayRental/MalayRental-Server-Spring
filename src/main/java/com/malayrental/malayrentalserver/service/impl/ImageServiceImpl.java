@@ -5,22 +5,32 @@ import com.malayrental.malayrentalserver.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.io.InputStream;
 
 @Service
 public class ImageServiceImpl implements ImageService {
 
     @Value("${malayrental.upload.image-path}")
     private String uploadPath;
+
+    @Value("${dev.flag:false}")
+    private boolean devFlag;
+
+    @Value("${dev.remote-image-base-url:http://真实服务器地址/api/images}")
+    private String remoteImageBaseUrl;
 
     private final UserAccountService userAccountService;
     
@@ -40,7 +50,25 @@ public class ImageServiceImpl implements ImageService {
         if (isAllowedType(type)) {
             return null;
         }
-        
+        if (devFlag) {
+            // 开发环境下转发到远程服务器
+            try {
+                String remoteUrl = remoteImageBaseUrl + "/" + type + "/" + filename;
+                HttpURLConnection conn = (HttpURLConnection) new java.net.URL(remoteUrl).openConnection();
+                conn.setConnectTimeout(3000);
+                conn.setReadTimeout(5000);
+                conn.setRequestMethod("GET");
+                int code = conn.getResponseCode();
+                if (code == 200) {
+                    InputStream in = conn.getInputStream();
+                    return new InputStreamResource(in);
+                } else {
+                    return null;
+                }
+            } catch (Exception e) {
+                return null;
+            }
+        }
         try {
             // 构建文件路径
             Path filePath = Paths.get(uploadPath, type, filename);
@@ -101,6 +129,62 @@ public class ImageServiceImpl implements ImageService {
             return result;
         }
         
+        if (devFlag) {
+            // 开发环境下转发上传到远程服务器
+            try {
+                String remoteUrl = remoteImageBaseUrl + "/" + type + "/upload";
+                java.net.URL url = new java.net.URL(remoteUrl);
+                String boundary = "----WebKitFormBoundary" + UUID.randomUUID();
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoOutput(true);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                java.io.OutputStream out = conn.getOutputStream();
+                java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.OutputStreamWriter(out, java.nio.charset.StandardCharsets.UTF_8), true);
+                // 发送runUser字段
+                writer.append("--" + boundary).append("\r\n");
+                writer.append("Content-Disposition: form-data; name=\"runUser\"").append("\r\n\r\n");
+                writer.append(runUser).append("\r\n");
+                // 发送文件字段
+                writer.append("--" + boundary).append("\r\n");
+                writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"" + originalFilename + "\"").append("\r\n");
+                writer.append("Content-Type: " + determineContentType(originalFilename)).append("\r\n\r\n");
+                writer.flush();
+                // 写入文件内容
+                try (InputStream inputStream = file.getInputStream()) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                    out.flush();
+                }
+                writer.append("\r\n");
+                // 结束分隔符
+                writer.append("--" + boundary + "--").append("\r\n");
+                writer.close();
+                // 读取远程响应
+                int code = conn.getResponseCode();
+                InputStream respStream = (code == 200) ? conn.getInputStream() : conn.getErrorStream();
+                StringBuilder resp = new StringBuilder();
+                try (Scanner scanner = new Scanner(respStream, java.nio.charset.StandardCharsets.UTF_8)) {
+                    while (scanner.hasNextLine()) {
+                        resp.append(scanner.nextLine());
+                    }
+                }
+                String respStr = resp.toString();
+                // 直接解析远程返回的JSON并合并到result
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> remoteMap = mapper.readValue(respStr, Map.class);
+                result.clear();
+                result.putAll(remoteMap);
+                return result;
+            } catch (Exception e) {
+                result.put("code", 500);
+                result.put("message", "转发上传失败: " + e.getMessage());
+                return result;
+            }
+        }
         try {
             // 生成新的文件名
             String newFilename = UUID.randomUUID() + fileExtension;

@@ -106,4 +106,50 @@ public class MiniInfoController {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }
     }
+
+    /**
+     * 编辑Banner链接
+     */
+    @PostMapping("/editBanner")
+    public ApiResponse editBanner(@RequestBody Map<String, Object> req) {
+        Map<String, Object> data = parseDataMap(req);
+        if (data == null) {
+            return ApiResponse.error(400, "参数不合法");
+        }
+        try {
+            int result = miniBannerService.editBanner(data);
+            return switch (result) {
+                case 0 -> ApiResponse.ok("Banner链接已更新", null);
+                case 1 -> ApiResponse.error(400, "参数不合法");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                case 3 -> ApiResponse.error(400, "Banner不存在");
+                default -> ApiResponse.error(500, "系统错误请稍后再试");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试");
+        }
+    }
+
+    /**
+     * 删除Banner（逻辑删除，status设为Deleted）
+     */
+    @PostMapping("/deleteBanner")
+    public ApiResponse deleteBanner(@RequestBody Map<String, Object> req) {
+        Map<String, Object> data = parseDataMap(req);
+        if (data == null) {
+            return ApiResponse.error(400, "参数不合法");
+        }
+        try {
+            int result = miniBannerService.deleteBanner(data);
+            return switch (result) {
+                case 0 -> ApiResponse.ok("Banner已删除", null);
+                case 1 -> ApiResponse.error(400, "参数不合法");
+                case 2 -> ApiResponse.error(400, "操作不合法");
+                case 3 -> ApiResponse.error(400, "Banner不存在");
+                default -> ApiResponse.error(500, "系统错误请稍后再试");
+            };
+        } catch (Exception e) {
+            return ApiResponse.error(500, "系统错误请稍后再试");
+        }
+    }
 } 
