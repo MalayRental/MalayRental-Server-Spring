@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven'
+        jdk 'Jdk'
+    }
+
     environment {
         IMAGE_NAME = 'mr-bserver:latest'
         CONTAINER_NAME = 'MR-BServer'
