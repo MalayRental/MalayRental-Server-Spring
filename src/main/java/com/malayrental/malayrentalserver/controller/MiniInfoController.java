@@ -5,6 +5,8 @@ import com.malayrental.malayrentalserver.pojo.MiniBanner;
 import com.malayrental.malayrentalserver.pojo.MiniSearchKey;
 import com.malayrental.malayrentalserver.service.MiniBannerService;
 import com.malayrental.malayrentalserver.service.MiniSearchKeyService;
+import com.malayrental.malayrentalserver.service.MiniShareInfoService;
+import com.malayrental.malayrentalserver.pojo.MiniShareInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +21,12 @@ public class MiniInfoController {
     private static final Logger logger = LoggerFactory.getLogger(MiniInfoController.class);
     private final MiniBannerService miniBannerService;
     private final MiniSearchKeyService miniSearchKeyService;
+    private final MiniShareInfoService miniShareInfoService;
 
-    public MiniInfoController(MiniBannerService miniBannerService, MiniSearchKeyService miniSearchKeyService) {
+    public MiniInfoController(MiniBannerService miniBannerService, MiniSearchKeyService miniSearchKeyService, MiniShareInfoService miniShareInfoService) {
         this.miniBannerService = miniBannerService;
         this.miniSearchKeyService = miniSearchKeyService;
+        this.miniShareInfoService = miniShareInfoService;
     }
 
     private Map<String, Object> parseDataMap(Map<String, Object> req) {
@@ -221,5 +225,92 @@ public class MiniInfoController {
         } catch (Exception e) {
             return ApiResponse.error(500, "系统错误请稍后再试");
         }
+    }
+
+    /**
+     * 获取页面转发信息
+     * @param req 请求体，需包含 message、timestamp、data.page
+     * @return ApiResponse { title, imageUrl }
+     */
+    @PostMapping("/getShareInfo")
+    public ApiResponse getShareInfo(@RequestBody Map<String, Object> req) {
+        int resultCode = 0;
+        Map<String, Object> result = new HashMap<>();
+        if (req == null || !req.containsKey("message") || !req.containsKey("timestamp") || !req.containsKey("data")) {
+            resultCode = 1;
+        } else {
+            Map<String, Object> data = parseDataMap(req);
+            if (data == null || !data.containsKey("page")) {
+                resultCode = 1;
+            } else {
+                String page = data.get("page").toString();
+                MiniShareInfo shareInfo = miniShareInfoService.getEnableShareInfoByPage(page);
+                if (shareInfo == null) {
+                    resultCode = 2;
+                } else {
+                    result.put("title", shareInfo.getTitle());
+                    result.put("imageUrl", shareInfo.getImageUrl());
+                }
+            }
+        }
+        return switch (resultCode) {
+            case 0 -> ApiResponse.ok("获取转发信息成功", result);
+            case 1 -> ApiResponse.error(400, "参数不合法");
+            case 2 -> ApiResponse.error(400, "页面不存在");
+            default -> ApiResponse.error(500, "系统错误请稍后再试");
+        };
+    }
+
+    /**
+     * 添加页面转发信息
+     * @param req 请求体，需包含 data.page、data.title、data.imageUrl
+     * @return ApiResponse
+     */
+    @PostMapping("/addShareInfo")
+    public ApiResponse addShareInfo(@RequestBody Map<String, Object> req) {
+        int resultCode = 0;
+        if (req == null || !req.containsKey("data")) {
+            resultCode = 1;
+        } else {
+            Map<String, Object> data = parseDataMap(req);
+            if (data == null || !data.containsKey("page") || !data.containsKey("title")) {
+                resultCode = 1;
+            } else {
+                resultCode = miniShareInfoService.addShareInfo(data);
+            }
+        }
+        return switch (resultCode) {
+            case 0 -> ApiResponse.ok("添加成功", null);
+            case 1 -> ApiResponse.error(400, "参数不合法");
+            case 2 -> ApiResponse.error(403, "无权限操作");
+            default -> ApiResponse.error(500, "系统错误请稍后再试");
+        };
+    }
+
+    /**
+     * 更新页面转发信息
+     * @param req 请求体，需包含 data.page、data.title、data.imageUrl
+     * @return ApiResponse
+     */
+    @PostMapping("/updateShareInfo")
+    public ApiResponse updateShareInfo(@RequestBody Map<String, Object> req) {
+        int resultCode = 0;
+        if (req == null || !req.containsKey("data")) {
+            resultCode = 1;
+        } else {
+            Map<String, Object> data = parseDataMap(req);
+            if (data == null || !data.containsKey("page") || !data.containsKey("title")) {
+                resultCode = 1;
+            } else {
+                resultCode = miniShareInfoService.updateShareInfo(data);
+            }
+        }
+        return switch (resultCode) {
+            case 0 -> ApiResponse.ok("更新成功", null);
+            case 1 -> ApiResponse.error(400, "参数不合法");
+            case 2 -> ApiResponse.error(403, "无权限操作");
+            case 3 -> ApiResponse.error(400, "页面不存在");
+            default -> ApiResponse.error(500, "系统错误请稍后再试");
+        };
     }
 } 
