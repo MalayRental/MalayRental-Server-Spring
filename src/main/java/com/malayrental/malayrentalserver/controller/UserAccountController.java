@@ -131,7 +131,11 @@ public class UserAccountController {
                 case 0 -> {
                     UserAccount user = userHolder[0];
                     TokenInfo tokenInfo = userAccountService.generateUserToken(user.getUserId());
-                    Map<String, Object> content = createUserInfoMap(user, tokenInfo != null ? tokenInfo.expired() : null);
+                    if (tokenInfo != null) {
+                        user.setUserToken(tokenInfo.token());
+                        user.setTokenExpired(tokenInfo.expired());
+                    }
+                    Map<String, Object> content = createUserInfoMap(user, user.getTokenExpired());
                     yield ApiResponse.ok("登录成功", content);
                 }
                 case 1 -> ApiResponse.error(400, "账号或密码错误");
