@@ -10,6 +10,7 @@ import com.malayrental.malayrentalserver.pojo.UserAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
+import com.malayrental.malayrentalserver.websocket.ChatMessageResult;
 
 @Component
 public class WebSocketServer extends TextWebSocketHandler {
@@ -66,8 +67,18 @@ public class WebSocketServer extends TextWebSocketHandler {
             session.sendMessage(new TextMessage("pong"));
             log.debug("收到心跳ping，已回复pong，userId={}", userId);
         } else if (payload.startsWith("[Request][ChatService][SendMessage][")) {
-            String resp = chatMessageHandler.handleMessage(payload);
-            session.sendMessage(new TextMessage(resp));
+            ChatMessageResult result = chatMessageHandler.handleMessage(payload);
+            // 回复发送方
+            session.sendMessage(new TextMessage(result.getResponse()));
+            // 推送给对方
+            String targetUserId = result.getTargetUserId();
+            if (targetUserId != null && userSessionMap.containsKey(targetUserId)) {
+                WebSocketSession targetSession = userSessionMap.get(targetUserId);
+                if (targetSession != null && targetSession.isOpen()) {
+                    targetSession.sendMessage(new TextMessage(result.getPushContent()));
+                    log.debug("已推送消息给对方，targetUserId={}", targetUserId);
+                }
+            }
         }
     }
 

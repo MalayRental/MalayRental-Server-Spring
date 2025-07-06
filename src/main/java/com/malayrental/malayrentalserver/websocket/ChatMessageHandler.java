@@ -30,41 +30,41 @@ public class ChatMessageHandler {
     /**
      * 处理WebSocket消息
      */
-    public String handleMessage(String payload) {
+    public ChatMessageResult handleMessage(String payload) {
         // 解析格式: [Request][ChatService][SendMessage][runUser][chatId][messageType]消息内容
         if (payload == null || !payload.startsWith("[Request][ChatService][SendMessage][")) {
-            return "[Response][400]未知命令！";
+            return new ChatMessageResult("[Response][400]未知命令！", null, null);
         }
         try {
             // 新的分割方式，保证字段准确
             String[] parts = payload.split("]", 6);
             if (parts.length < 6) {
-                return "[Response][400]参数不合法！";
+                return new ChatMessageResult("[Response][400]参数不合法！", null, null);
             }
             String runUser = parts[3].substring(1);
             String chatId = parts[4].substring(1);
             String messageType = parts[5].substring(1, parts[5].indexOf("]"));
             String content = parts[5].substring(parts[5].indexOf("]") + 1);
             if (runUser.isEmpty() || chatId.isEmpty() || messageType.isEmpty() || content.isEmpty()) {
-                return "[Response][400]参数不合法！";
+                return new ChatMessageResult("[Response][400]参数不合法！", null, null);
             }
             // 校验用户
             UserAccount user = userAccountMapper.selectById(runUser);
             if (user == null) {
-                return "[Response][400]操作不合法！";
+                return new ChatMessageResult("[Response][400]操作不合法！", null, null);
             }
             String role = user.getUserRole();
             if (!("User".equals(role) || "Admin".equals(role) || "Staff".equals(role))) {
-                return "[Response][400]操作不合法！";
+                return new ChatMessageResult("[Response][400]操作不合法！", null, null);
             }
             // 校验会话
             ChatList chat = chatListMapper.selectById(chatId);
             if (chat == null) {
-                return "[Response][400]会话不存在！";
+                return new ChatMessageResult("[Response][400]会话不存在！", null, null);
             }
             // 检查是否为对话成员
             if (!(runUser.equals(chat.getUserId()) || runUser.equals(chat.getStaffId()))) {
-                return "[Response][400]非此对话成员！";
+                return new ChatMessageResult("[Response][400]非此对话成员！", null, null);
             }
             // 插入消息
             MessageList msg = new MessageList();
@@ -77,13 +77,16 @@ public class ChatMessageHandler {
             msg.setCreateTime(LocalDateTime.now());
             int rows = messageListMapper.insert(msg);
             if (rows > 0) {
-                return "[Response][200]消息发送成功！";
+                // 推送给对方
+                String targetUserId = runUser.equals(chat.getUserId()) ? chat.getStaffId() : chat.getUserId();
+                String pushContent = "[Push][ChatService][NewMessage][" + chatId + "][" + messageType + "]" + content;
+                return new ChatMessageResult("[Response][200]消息发送成功！", targetUserId, pushContent);
             } else {
-                return "[Response][400]参数不合法！";
+                return new ChatMessageResult("[Response][400]参数不合法！", null, null);
             }
         } catch (Exception e) {
             log.error("消息处理异常", e);
-            return "[Response][400]参数不合法！";
+            return new ChatMessageResult("[Response][400]参数不合法！", null, null);
         }
     }
 } 
